@@ -1,0 +1,17 @@
+{
+  "name": "Nosso Financeiro — Vithor e Thaynara",
+  "short_name": "Nosso Financeiro",
+  "description": "Controle financeiro do casal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#171411",
+  "theme_color": "#171411",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}
