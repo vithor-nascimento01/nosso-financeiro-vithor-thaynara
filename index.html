@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#171410">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nosso Financeiro">
+  <title>Nosso Financeiro | V + T</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="./manifest.webmanifest">
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="branding"><div class="logo">V♡T</div><div class="brandtext"><h1>Nosso Financeiro</h1><small>VITHOR + THAYNARA</small></div>
+    <select id="person" aria-label="Quem está registrando"><option value="v">Vithor</option><option value="t">Thaynara</option></select></div>
+    <h2>Nosso dinheiro,<br>nosso futuro.</h2><p>Juntos em todos os planos ♡</p>
+    <div class="warning">Versão pública para demonstração. Os lançamentos ficam apenas neste navegador e <strong>não sincronizam</strong> entre aparelhos. Não registre dados financeiros sensíveis.</div>
+  </header>
+  <main class="paper">
+    <section id="inicio" class="page active">
+      <div class="balance"><small>Patrimônio registrado no controle</small><strong id="patrimonio">R$ 0,00</strong><small>Disponível + valores reservados em metas</small></div>
+      <div class="stats" id="stats"></div>
+      <h3>Acesso rápido</h3>
+      <div class="actions">
+        <button data-new="expense">＋<span>Lançar gasto</span></button>
+        <button data-new="transfer">⇄<span>Transferir</span></button>
+        <button data-new="goal">♡<span>Guardar</span></button>
+      </div>
+      <h3>Nossos planos</h3><div class="goals" id="resumoMetas"></div>
+      <h3>Últimos lançamentos</h3><div class="card" id="recentes"></div>
+    </section>
+    <section id="carteiras" class="page">
+      <h3>Carteiras do casal</h3><div id="cardsCarteiras"></div>
+      <div class="card"><h4>Transferir entre carteiras</h4><p>O dinheiro sai de uma conta e entra na outra. Não é uma nova receita nem despesa.</p><button class="primary" data-new="transfer">Nova transferência</button></div>
+    </section>
+    <section id="planos" class="page">
+      <div class="sectionline"><h3>Nossos planos de futuro</h3><button class="secondary" id="editarMetas">Editar metas</button></div>
+      <div class="goals" id="todasMetas"></div><h3>Planejamento individual</h3><div id="individuais"></div>
+    </section>
+    <section id="extrato" class="page">
+      <div class="sectionline"><h3>Lançamentos</h3><button class="primary" data-new="expense">+ Novo</button></div>
+      <div class="filters"><button data-filter="all" class="selected">Todos</button><button data-filter="v">Vithor</button><button data-filter="t">Thaynara</button><button data-filter="shared">Conjunta</button></div>
+      <div class="card" id="movimentos"></div>
+    </section>
+    <section id="chat" class="page">
+      <h3>Grupo do casal</h3><div class="chat">
+      <div class="chathead"><b>♡ Nosso Financeiro</b><small>Vithor, Thaynara e assistente financeiro</small></div>
+      <div class="chatlist" id="mensagens" aria-live="polite"></div>
+      <form class="compose" id="chatForm"><input id="chatInput" placeholder="Ex.: Gastei R$ 85 no mercado" autocomplete="off" aria-label="Mensagem do grupo"><button type="submit" aria-label="Enviar">➤</button></form>
+      </div><p class="footnote">O chat interpreta frases simples neste protótipo. Ainda não é uma IA externa e não se conecta ao WhatsApp real.</p>
+    </section>
+    <footer>Nosso Financeiro ♡ Demonstração pública • dados locais</footer>
+  </main>
+</div>
+<nav class="navbar" aria-label="Navegação">
+  <button data-page="inicio" class="active">⌂<small>Início</small></button>
+  <button data-page="carteiras">▣<small>Carteiras</small></button>
+  <button data-page="planos">♡<small>Planos</small></button>
+  <button data-page="extrato">☷<small>Extrato</small></button>
+  <button data-page="chat">◉<small>Chat</small></button>
+</nav>
+<div class="modalwrap" id="modalwrap" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="sectionline"><h3 id="modalTitle">Movimentação</h3><button class="secondary" type="button" id="fecharModal">✕</button></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+<script src="./app.js" defer></script>
+</body>
+</html>
