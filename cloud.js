@@ -7,9 +7,10 @@
   const today = () => new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   const name = slot => slot === 'v' ? 'Vithor' : slot === 't' ? 'Thaynara' : 'Conjunta';
   let api, user, household, slot, channel, refreshTimer, polling, editing = null, refreshing = false;
+  let recovering = false;
   let movements = [], goals = [], settings = [], messages = [];
   function show(id) {
-    for (const key of ['setup','login','household','workspace']) $(key).hidden = key !== id;
+    for (const key of ['setup','login','signup','forgot','setPassword','household','workspace']) $(key).hidden = key !== id;
   }
   function notice(message, error=false) {
     $('setupText').textContent = message;
@@ -41,18 +42,24 @@
       api = window.supabase.createClient(conf.url, conf.anonKey, {
         auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}
       });
-      api.auth.onAuthStateChange(() => {
-        // Evita chamadas Supabase dentro do próprio callback de autenticação.
-        setTimeout(() => loadSession().catch(fail), 0);
+      api.auth.onAuthStateChange(event => {
+        if (event === 'PASSWORD_RECOVERY') {
+          recovering = true;
+          show('setPassword');
+          $('connection').textContent='● Recuperação segura';
+          return;
+        }
+        // As consultas devem ocorrer fora do callback para evitar bloqueios do SDK.
+        if (!recovering) setTimeout(() => loadSession().catch(fail), 0);
       });
-      await loadSession();
+      if (!recovering) await loadSession();
     } catch(err) {
       show('setup');
       notice(err.message, true);
     }
   }
   async function loadSession() {
-    if(!api) return;
+    if(!api || recovering) return;
     const {data:{user:account},error} = await api.auth.getUser();
     if(error && error.status !== 400) return fail(error);
     if(!account) {
@@ -253,15 +260,102 @@
     if(res.error)return fail(res.error);
     $('message').value='';await loadData();
   }
+  const redirectTo = () => location.origin + '/cloud.html';
+  const feedback = (id, message) => { $(id).textContent=message; };
+  const authError = err => {
+    if (!err) return '';
+    const msg=err.message||'';
+    if (/invalid login credentials/i.test(msg)) return 'Login ou senha incorretos. Confira os dados ou recupere a senha.';
+    if (/email not confirmed/i.test(msg)) return 'Você precisa confirmar seu e-mail antes de entrar.';
+    if (/password should|password is too short|weak_password/i.test(msg)) return 'Escolha uma senha mais forte, com pelo menos 8 caracteres.';
+    if (/rate limit|too many requests|email rate limit/i.test(msg)) return 'Limite temporário de tentativas ou de e-mails. Tente novamente mais tarde.';
+    return msg || 'Não foi possível concluir o acesso.';
+  };
+  const submitBusy = (form, busy) => {
+    const button=form.querySelector('button[type=submit]');
+    if(button)button.disabled=busy;
+  };
   $('loginForm').addEventListener('submit',async e=>{
     e.preventDefault();
-    const email=$('email').value.trim();
-    $('loginStatus').textContent='Solicitando link seguro...';
-    const res=await api.auth.signInWithOtp({
-      email,options:{emailRedirectTo:location.origin+'/cloud.html'}
-    });
-    $('loginStatus').textContent=res.error ? res.error.message :
-      'Confira seu e-mail. Abra o link recebido no mesmo dispositivo.';
+    if(!api)return;
+    const form=e.currentTarget, email=$('email').value.trim(), password=$('password').value;
+    feedback('loginStatus','Verificando login...');
+    submitBusy(form,true);
+    try {
+      const res=await api.auth.signInWithPassword({email,password});
+      if(res.error) throw res.error;
+      $('password').value='';
+      feedback('loginStatus','Acesso autorizado.');
+      await loadSession();
+    } catch(err) {feedback('loginStatus',authError(err));}
+    finally {submitBusy(form,false);}
+  });
+  $('openSignup').onclick=()=>{
+    $('signupEmail').value=$('email').value;
+    feedback('signupStatus','');
+    show('signup');
+  };
+  $('openForgot').onclick=()=>{
+    $('forgotEmail').value=$('email').value;
+    feedback('forgotStatus','');
+    show('forgot');
+  };
+  document.querySelectorAll('[data-go-login]').forEach(b=>b.onclick=()=>{
+    feedback('loginStatus','');
+    show('login');
+  });
+  $('signupForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!api)return;
+    const password=$('signupPassword').value, confirm=$('signupConfirm').value, email=$('signupEmail').value.trim();
+    if(password.length<8)return feedback('signupStatus','A senha precisa ter pelo menos 8 caracteres.');
+    if(password!==confirm)return feedback('signupStatus','As senhas informadas não são iguais.');
+    const form=e.currentTarget;
+    submitBusy(form,true);
+    feedback('signupStatus','Criando sua conta segura...');
+    try{
+      const res=await api.auth.signUp({email,password,options:{emailRedirectTo:redirectTo()}});
+      if(res.error) throw res.error;
+      $('signupPassword').value='';$('signupConfirm').value='';
+      feedback('signupStatus',res.data?.session ?
+        'Cadastro criado. Abrindo sua conta...' :
+        'Verifique sua caixa de entrada e confirme seu e-mail pelo link recebido. Depois volte e faça o login com sua senha.');
+      if(res.data?.session)await loadSession();
+    }catch(err){feedback('signupStatus',authError(err));}
+    finally{submitBusy(form,false);}
+  });
+  $('forgotForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!api)return;
+    const form=e.currentTarget;
+    submitBusy(form,true);
+    feedback('forgotStatus','Solicitando recuperação...');
+    try{
+      const res=await api.auth.resetPasswordForEmail($('forgotEmail').value.trim(),{redirectTo:redirectTo()});
+      if(res.error)throw res.error;
+      feedback('forgotStatus','Se esse e-mail estiver cadastrado, você receberá um link para definir uma nova senha.');
+    }catch(err){feedback('forgotStatus',authError(err));}
+    finally{submitBusy(form,false);}
+  });
+  $('resetPasswordForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!api||!recovering)return;
+    const password=$('resetPassword').value, confirm=$('resetConfirm').value;
+    if(password.length<8)return feedback('resetStatus','Use uma senha com pelo menos 8 caracteres.');
+    if(password!==confirm)return feedback('resetStatus','As senhas não coincidem.');
+    const form=e.currentTarget;
+    submitBusy(form,true);
+    feedback('resetStatus','Atualizando sua senha...');
+    try{
+      const res=await api.auth.updateUser({password});
+      if(res.error)throw res.error;
+      $('resetPassword').value='';$('resetConfirm').value='';
+      await api.auth.signOut();
+      recovering=false;
+      show('login');
+      feedback('loginStatus','Senha alterada. Entre com seu e-mail e a nova senha.');
+    }catch(err){feedback('resetStatus',authError(err));}
+    finally{submitBusy(form,false);}
   });
   $('createFamily').onclick=createFamily;
   $('joinFamily').onclick=joinFamily;
