@@ -4,6 +4,15 @@
 >
 > O aplicativo compartilhado está na **branch** `feature/supabase-sync`, inicialmente em ambiente de prévia. A produção `main` continua sendo a demonstração com armazenamento local.
 
+## Entrada visual do casal (VTS2)
+A tela de entrada usa o nome `VTS2` e um PIN visual de quatro dígitos definido pelo casal. **Isso não substitui autenticação nem autoriza acesso ao banco**: o identificador e a validação visual constam do JavaScript público e não devem ser tratados como segredo financeiro.
+Quando o aparelho já possui sessão Supabase autorizada, a entrada visual revela o painel compartilhado. No primeiro uso sem sessão, a interface solicita vincular uma conta individual Supabase, preservando RLS.
+
+O botão **Bloquear** oculta o painel no dispositivo, mas não encerra a sessão remota. Para encerrar totalmente a sessão é necessário deslogar do Supabase neste aparelho.
+
+## Foto do casal (atenção à qualidade)
+O CSS espera `assets/login-casal.webp`. A versão com a foto usada originalmente foi exportada em baixa resolução. Para substituir, enviar a foto otimizada em **986×1600** para a pasta `assets/` da branch `feature/supabase-sync` com exatamente o nome `login-casal.webp`. Não usar miniatura. Ao comitar, a Vercel publica a nova versão. A foto exibida em login público também é acessível publicamente por URL.
+
 ## Como acessar o novo login com senha
 
 A versão de prévia oferece **entrar por e-mail e senha**, **criar conta** e **recuperar senha**. Não utiliza mais magic link para cada login: e-mails são necessários somente para confirmar a criação da conta e para recuperar a senha, se solicitado.
