@@ -48,15 +48,28 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <h2>Nosso dinheiro,<br>nosso futuro.</h2><p>Um registro, os dois celulares. ♡</p></header>
 <main class="site">
 <section id="setup" class="card"><h2>Preparando conexão</h2><p id="setupText" class="description">Validando o acesso ao banco privado.</p></section>
+<section id="gate" hidden class="card">
+<h2>Nosso Financeiro ♡</h2>
+<p class="description">Nosso dinheiro, nosso futuro.</p>
+<form id="gateForm">
+<label for="gateUser">Login</label>
+<input type="text" id="gateUser" name="username" required autocomplete="username" autocapitalize="characters" spellcheck="false" value="VTS2">
+<label for="gatePass">Senha</label>
+<input type="password" id="gatePass" name="password" required inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" placeholder="••••">
+<button type="submit" class="btn wide">Entrar no nosso financeiro →</button>
+</form>
+<p id="gateStatus" role="status" aria-live="polite" class="description"></p>
+<p class="description" style="font-size:11px;margin-top:18px">Acesso visual do casal. Os lançamentos online têm proteção adicional pelo Supabase.</p>
+</section>
 <section id="login" hidden class="card">
-<h2>Entrar no Nosso Financeiro ♡</h2>
-<p class="description">Acesso com login e senha, como antes — agora protegido pelo Supabase e com uma conta para cada pessoa.</p>
+<h2>Vincular acesso à nuvem ♡</h2>
+<p class="description">Somente na primeira configuração de cada aparelho: conecte sua conta segura para sincronizar os dados entre os celulares. Depois, use o acesso VTS2 na entrada.</p>
 <form id="loginForm">
-<label for="email">Login (seu e-mail)</label>
+<label for="email">E-mail da conta online</label>
 <input type="email" id="email" required autocomplete="username" placeholder="seu@email.com">
 <label for="password">Senha</label>
 <input type="password" id="password" required autocomplete="current-password" placeholder="Sua senha" minlength="8">
-<button class="btn wide" type="submit">Entrar</button></form>
+<button class="btn wide" type="submit">Conectar este aparelho</button></form>
 <div class="row space" style="margin-top:15px;flex-wrap:wrap">
 <button class="btnoutline" id="openSignup" type="button">Primeiro acesso? Criar conta</button>
 <button class="btnoutline" id="openForgot" type="button">Esqueci a senha</button>
