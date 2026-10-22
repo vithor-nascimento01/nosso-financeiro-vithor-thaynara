@@ -213,11 +213,11 @@ create policy movements_insert on public.movements for insert to authenticated
    and author_id=auth.uid()
    and person=public.my_slot(household_id));
 create policy movements_update on public.movements for update to authenticated
- using(public.is_household_member(household_id))
+ using(public.is_household_member(household_id) and author_id=auth.uid())
  with check(public.is_household_member(household_id)
    and author_id=auth.uid() and person=public.my_slot(household_id));
 create policy movements_delete on public.movements for delete to authenticated
- using(public.is_household_member(household_id));
+ using(public.is_household_member(household_id) and author_id=auth.uid());
 create policy messages_read on public.chat_messages for select to authenticated
  using(public.is_household_member(household_id));
 create policy messages_insert on public.chat_messages for insert to authenticated
