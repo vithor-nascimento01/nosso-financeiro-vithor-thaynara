@@ -514,11 +514,14 @@
   const feedback = (id, message) => { $(id).textContent=message; };
   const authError = err => {
     if (!err) return '';
-    const msg=err.message||'';
+    const msg=err.message||'', code=err.code||'', status=Number(err.status)||0;
+    if (/email_address_not_authorized/i.test(code+' '+msg)) return 'O serviço de e-mail padrão do Supabase não permite enviar confirmação para esse endereço. O administrador deve configurar SMTP próprio ou criar uma conta confirmada em Authentication > Users.';
+    if (/over_email_send_rate_limit|email rate limit/i.test(code+' '+msg)) return 'O Supabase atingiu o limite de e-mails de confirmação. NÃO envie o cadastro novamente agora. O administrador pode verificar a conta em Authentication > Users e, se ainda não existir, criá-la manualmente. O convite do casal continua separado.';
+    if (/over_request_rate_limit|too many requests|rate limit|security purposes, you can only request/i.test(code+' '+msg) || status===429) return 'Muitas tentativas em pouco tempo. Evite apertar novamente e confira no Supabase > Authentication > Users se a conta foi criada. Aguarde a liberação do limite antes de tentar outra vez.';
     if (/invalid login credentials/i.test(msg)) return 'Login ou senha incorretos. Confira os dados ou recupere a senha.';
-    if (/email not confirmed/i.test(msg)) return 'Você precisa confirmar seu e-mail antes de entrar.';
-    if (/password should|password is too short|weak_password/i.test(msg)) return 'Escolha uma senha mais forte, com pelo menos 8 caracteres.';
-    if (/rate limit|too many requests|email rate limit/i.test(msg)) return 'Limite temporário de tentativas ou de e-mails. Tente novamente mais tarde.';
+    if (/email not confirmed|email_not_confirmed/i.test(code+' '+msg)) return 'O e-mail desta conta ainda precisa ser confirmado. Confira o e-mail recebido ou peça ao administrador para verificar o estado em Authentication > Users.';
+    if (/user already registered|user_already_exists/i.test(code+' '+msg)) return 'Essa conta já está cadastrada. Volte ao login e use o e-mail e a senha que vocês criaram.';
+    if (/password should|password is too short|weak_password/i.test(code+' '+msg)) return 'Escolha uma senha mais forte, com pelo menos 8 caracteres.';
     return msg || 'Não foi possível concluir o acesso.';
   };
   const submitBusy = (form, busy) => {
