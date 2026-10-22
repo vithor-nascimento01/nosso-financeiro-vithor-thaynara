@@ -1,8 +1,8 @@
 /* Tema do login V♡T. Foto de fundo somente na autenticação. */
 body.auth-screen{min-height:100dvh;background:#14100e;overflow-x:hidden;color:#f7e5c7}
-body.auth-screen::before{content:"";position:fixed;inset:0;z-index:-2;background-image:linear-gradient(180deg,rgba(13,12,13,.42) 0%,rgba(19,13,12,.45) 35%,rgba(20,11,8,.75) 100%),url("./assets/login-casal.webp");background-color:#231b17;background-position:center;background-size:cover;background-repeat:no-repeat}
-body.auth-screen::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 15%,rgba(14,9,6,.25) 85%)}
-body.auth-screen .app{min-height:100dvh;max-width:740px;display:flex;flex-direction:column;justify-content:center}
+body.auth-screen::before{content:"";position:fixed;inset:0;z-index:0;background-image:linear-gradient(180deg,rgba(13,12,13,.42) 0%,rgba(19,13,12,.45) 35%,rgba(20,11,8,.75) 100%),url("./assets/login-casal.webp");background-color:#231b17;background-position:center;background-size:cover;background-repeat:no-repeat}
+body.auth-screen::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 15%,rgba(14,9,6,.25) 85%)}
+body.auth-screen .app{position:relative;z-index:1;min-height:100dvh;max-width:740px;display:flex;flex-direction:column;justify-content:center}
 body.auth-screen .hero{padding:clamp(20px,4.5vh,55px) 18px 10px;text-align:center;background:none}
 body.auth-screen .top{display:flex;flex-direction:column;justify-content:center;gap:10px}
 body.auth-screen .mark{height:70px;width:132px;border-radius:46px;margin:auto;background:rgba(22,15,10,.73);border:2px solid #edc78b;box-shadow:0 9px 32px #05030383,0 0 17px #dfb4742c;color:#f4d19b;font-size:35px;font-weight:400}
