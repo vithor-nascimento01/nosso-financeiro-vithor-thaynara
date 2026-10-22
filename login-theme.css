@@ -10,7 +10,7 @@ body.auth-screen .brand h1{font-family:Georgia,serif;font-weight:400;font-size:c
 body.auth-screen .brand small{display:block;margin-top:8px;font-size:11px;font-weight:700;color:#f5d39d;letter-spacing:3px;text-transform:uppercase}
 body.auth-screen .hero h2,body.auth-screen .hero>p{display:none}
 body.auth-screen .site{background:transparent;min-height:0;padding:0 18px 35px;border-radius:0}
-body.auth-screen #login,body.auth-screen #signup,body.auth-screen #forgot,body.auth-screen #setPassword,body.auth-screen #quicklock,body.auth-screen #pinSetup,body.auth-screen #household{background:rgba(37,25,20,.70);border:1.5px solid rgba(249,205,141,.79);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:25px;padding:clamp(22px,4vw,37px);box-shadow:0 17px 50px #130d0b8c,inset 0 0 22px #d9b68c12}
+body.auth-screen #gate,body.auth-screen #gate,body.auth-screen #login,body.auth-screen #signup,body.auth-screen #forgot,body.auth-screen #setPassword,body.auth-screen #quicklock,body.auth-screen #pinSetup,body.auth-screen #household{background:rgba(37,25,20,.70);border:1.5px solid rgba(249,205,141,.79);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:25px;padding:clamp(22px,4vw,37px);box-shadow:0 17px 50px #130d0b8c,inset 0 0 22px #d9b68c12}
 body.auth-screen #setup{background:rgba(32,25,21,.77);border:1px solid #e9c18c99;border-radius:20px}
 body.auth-screen .card h2{font-family:Georgia,serif;font-weight:500;color:#ffe5bd;font-size:25px;text-align:center;margin:0 0 15px}
 body.auth-screen .description{color:#f4e4cfc7}
@@ -22,8 +22,16 @@ body.auth-screen .btn{background:linear-gradient(110deg,#f5daa7,#d5a35d);border:
 body.auth-screen .btnoutline{color:#f9dcb2;background:rgba(49,32,21,.78);border-color:#bd925c}
 body.auth-screen .error{color:#ffadad}
 body.auth-screen .card h2+.description{text-align:center}
-body.auth-screen #login::after,body.auth-screen #quicklock::after{content:"♡  Nosso dinheiro, nosso futuro.  ♡";display:block;text-align:center;margin-top:26px;font:italic 19px Georgia,serif;color:#fee2b7}
-body.auth-screen #loginStatus,body.auth-screen #signupStatus,body.auth-screen #forgotStatus,body.auth-screen #quickStatus{color:#ffdaa2;font-size:12px}
+body.auth-screen #gate::after,body.auth-screen #quicklock::after{content:"♡  Nosso dinheiro, nosso futuro.  ♡";display:block;text-align:center;margin-top:26px;font:italic 19px Georgia,serif;color:#fee2b7}
+body.auth-screen #gateStatus,body.auth-screen #loginStatus,body.auth-screen #signupStatus,body.auth-screen #forgotStatus,body.auth-screen #quickStatus{color:#ffdaa2;font-size:12px}
 @media(min-width:800px){body.auth-screen::before{background-size:cover;background-position:center 40%}}
 @media(max-width:430px){body.auth-screen .mark{height:62px;width:118px}body.auth-screen .site{padding:0 12px 18px}body.auth-screen .brand h1{font-size:34px}body.auth-screen #login,body.auth-screen #signup,body.auth-screen #forgot,body.auth-screen #setPassword,body.auth-screen #quicklock,body.auth-screen #pinSetup{padding:21px 18px}body.auth-screen .hero{padding-top:22px}body.auth-screen .card h2{font-size:21px}}
 @media(prefers-reduced-motion:reduce){body.auth-screen *{scroll-behavior:auto!important;transition:none!important}}
+/* Foto vertical: preserva rostos no desktop; no iPhone ocupa a tela sem cortes no topo */
+@media(min-width:700px){body.auth-screen::before{background-size:cover,auto 100%;background-position:center center,center top;background-repeat:no-repeat;background-color:#181411}}
+@media(max-width:699px){body.auth-screen::before{background-position:center center,center top}}
+body.auth-screen #gate h2{font:normal clamp(27px,6vw,38px) Georgia,serif;margin:0 0 9px}
+body.auth-screen #gate .description:first-of-type{text-align:center;font:italic 17px Georgia,serif}
+body.auth-screen #gate label{display:block;margin-top:11px}
+body.auth-screen #gate .btn{width:100%;margin-top:9px}
+body.auth-screen #gate #gateStatus{text-align:center;font-weight:650}
