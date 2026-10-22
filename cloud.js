@@ -7,12 +7,13 @@
   const today = () => new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   const name = slot => slot === 'v' ? 'Vithor' : slot === 't' ? 'Thaynara' : 'Conjunta';
   let api, user, household, slot, channel, refreshTimer, polling, editing = null, refreshing = false;
-  let recovering = false, quickUnlocked = false, pinDismissed = false;
+  let recovering = false, quickUnlocked = false, pinDismissed = false, gatewayUnlocked = false;
+  let gatewayFailures = 0, gatewayLockedUntil = 0;
   let pinFailures = 0, pinLockedUntil = 0;
   let movements = [], goals = [], settings = [], messages = [];
   function show(id) {
     document.body.classList.toggle('auth-screen',id!=='workspace');
-    for (const key of ['setup','login','signup','forgot','setPassword','quicklock','pinSetup','household','workspace']) $(key).hidden = key !== id;
+    for (const key of ['setup','gate','login','signup','forgot','setPassword','quicklock','pinSetup','household','workspace']) $(key).hidden = key !== id;
   }
   function notice(message, error=false) {
     $('setupText').textContent = message;
@@ -62,6 +63,7 @@
   }
   async function loadSession() {
     if(!api || recovering) return;
+    if(!gatewayUnlocked){show('gate');$('connection').textContent='● Acesso do casal';return;}
     const {data:{user:account},error} = await api.auth.getUser();
     if(error && error.status !== 400) return fail(error);
     if(!account) {
@@ -326,6 +328,27 @@
     await api.auth.signOut();
     await loadSession();
   };
+
+  // Acesso decorativo escolhido pelo casal. Não concede sessão Supabase.
+  // A sincronização real só é liberada após autenticação do provedor.
+  $('gateForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    if(Date.now()<gatewayLockedUntil){
+      $('gateStatus').textContent='Muitas tentativas. Tente novamente em alguns minutos.';return;
+    }
+    const login=$('gateUser').value.trim().toUpperCase();
+    const pass=$('gatePass').value;
+    $('gatePass').value='';
+    if(login!=='VTS2' || pass!=='1409'){
+      gatewayFailures++;
+      if(gatewayFailures>=5){gatewayLockedUntil=Date.now()+3*60*1000;gatewayFailures=0;}
+      $('gateStatus').textContent='Login ou senha incorretos.';return;
+    }
+    if(!api){$('gateStatus').textContent='Sem conexão com o banco online no momento.';return;}
+    gatewayFailures=0;gatewayUnlocked=true;quickUnlocked=true;pinDismissed=true;
+    $('gateStatus').textContent='';
+    await loadSession();
+  });
   const redirectTo = () => location.origin + '/cloud.html';
   const feedback = (id, message) => { $(id).textContent=message; };
   const authError = err => {
@@ -426,7 +449,7 @@
   $('createFamily').onclick=createFamily;
   $('joinFamily').onclick=joinFamily;
   $('makeInvite').onclick=makeInvite;
-  $('logout').onclick=async()=>{if(polling)clearInterval(polling);quickUnlocked=false;pinDismissed=false;await api.auth.signOut();await loadSession();};
+  $('logout').onclick=async()=>{gatewayUnlocked=false;quickUnlocked=false;pinDismissed=true;show('gate');$('connection').textContent='● Acesso do casal';};
   $('newMovement').onclick=()=>editMovement();
   $('cancelEntry').onclick=()=>{$('entryFormWrapper').hidden=true;};
   $('entryForm').onsubmit=saveMovement;
