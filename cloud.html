@@ -59,7 +59,7 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <button type="submit" class="btn wide">Entrar no nosso financeiro →</button>
 </form>
 <p id="gateStatus" role="status" aria-live="polite" class="description"></p>
-<p class="description" style="font-size:11px;margin-top:18px">Acesso visual do casal. Os lançamentos online têm proteção adicional pelo Supabase.</p>
+<p class="description" style="font-size:11px;margin-top:18px">Acesso do casal. O banco compartilhado usa autenticação separada do Supabase.</p>
 </section>
 <section id="login" hidden class="card">
 <h2>Vincular acesso à nuvem ♡</h2>
@@ -75,6 +75,7 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <button class="btnoutline" id="openForgot" type="button">Esqueci a senha</button>
 </div>
 <p id="loginStatus" class="description" role="status" aria-live="polite"></p>
+<button type="button" class="btnoutline" id="backToGate">Voltar</button>
 </section>
 <section id="quicklock" hidden class="card">
 <h2>Bem-vindos de volta ♡</h2>
@@ -140,7 +141,7 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <div class="grid"><div class="card"><button class="btn wide" id="createFamily">Criar nossa família</button></div><div class="card"><label>Código recebido</label><input id="inviteInput" placeholder="Cole o código de convite"><button class="btnoutline wide" id="joinFamily">Entrar pelo convite</button></div></div>
 <p class="error" id="familyError"></p></section>
 <section id="workspace" hidden>
-<div class="row space" style="margin-bottom:15px"><div><b id="memberName"></b><p class="description" style="margin:3px 0">Dados protegidos por acesso de família</p></div><button class="btnoutline" id="logout">Sair</button></div>
+<div class="row space" style="margin-bottom:15px"><div><b id="memberName"></b><p class="description" style="margin:3px 0">Dados protegidos por acesso de família</p></div><button class="btnoutline" id="logout">Bloquear</button></div>
 <section class="tab active" id="dashboard"><div class="balance"><p>Patrimônio informado</p><strong id="totalBalance">R$ 0,00</strong><p>Carteiras + reservas, sem dupla contagem</p></div><div class="grid" id="stats"></div><h3 style="margin-top:20px">Carteiras</h3><div class="grid" id="accounts"></div><h3 style="margin-top:20px">Últimos registros</h3><div id="recent" class="card"></div></section>
 <section class="tab" id="ledger"><div class="row space"><h3>Lançamentos</h3><button class="btn" id="newMovement">+ Novo</button></div><div id="entries" class="card"></div><section class="card" id="entryFormWrapper" hidden><h3 id="entryTitle">Novo lançamento</h3><form id="entryForm"><label>Tipo</label><select id="mKind"><option value="expense">Despesa</option><option value="income">Receita</option><option value="transfer">Transferência</option><option value="goal">Aporte em meta</option><option value="withdraw">Resgate da meta</option></select>
 <div class="grid"><div><label>Valor (R$)</label><input id="mAmount" inputmode="decimal" required placeholder="0,00"></div><div><label>Data</label><input type="date" id="mDate" required></div></div>
