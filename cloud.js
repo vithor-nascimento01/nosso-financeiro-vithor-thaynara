@@ -10,7 +10,8 @@
   let recovering = false;
   let movements = [], goals = [], settings = [], messages = [];
   function show(id) {
-    for (const key of ['setup','login','signup','forgot','setPassword','household','workspace']) $(key).hidden = key !== id;
+    document.body.classList.toggle('auth-screen',id!=='workspace');
+    for (const key of ['setup','login','signup','forgot','setPassword','quicklock','pinSetup','household','workspace']) $(key).hidden = key !== id;
   }
   function notice(message, error=false) {
     $('setupText').textContent = message;
