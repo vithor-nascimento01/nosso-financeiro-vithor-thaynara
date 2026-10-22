@@ -1,31 +1,58 @@
-# Conexão real: Nosso Financeiro (Supabase + Vercel)
+# Nosso Financeiro — versão compartilhada (Vercel + Supabase)
 
-> **Status: estrutura preparada, banco ainda não provisionado.** Esta branch não substitui a versão de demonstração, que continua funcionando em `main`.
+> O banco Supabase **supabase-citron-basket** foi criado pelo usuário e a migração SQL foi executada com resultado "Success. No rows returned" em 22/10/2026. Isso confirma a execução do script; os acessos e a sincronização ainda precisam de testes com duas contas.
+>
+> O aplicativo compartilhado está na **branch** `feature/supabase-sync`, inicialmente em ambiente de prévia. A produção `main` continua sendo a demonstração com armazenamento local.
 
-1. No projeto Vercel `nosso-financeiro-vt-github`, abra **Storage → Browse Marketplace → Supabase → Connect**. Revise o plano e custos.
-2. No Supabase criado/conectado, abra **SQL Editor** e aplique `migrations/20261021_initial.sql`. Faça primeiro em um banco vazio de testes. O SQL cria as políticas RLS, as contas, as metas, os convites e a publicação Realtime.
-3. Em **Authentication → URL Configuration**, configure o endereço HTTPS `https://nosso-financeiro-vt-github.vercel.app/cloud.html` como redirect permitido. Ative Email OTP (link mágico). Não desative confirmação de e-mail.
-4. Na Vercel, verifique as variáveis de ambiente do projeto (produção e preview): `SUPABASE_URL` (URL do projeto) e `SUPABASE_PUBLISHABLE_KEY` (chave **publishable/anon**). **Nunca** use `service_role` no frontend nem nesta API.
-5. Faça deploy de preview desta branch, abra `/cloud.html`, crie contas separadas para os dois e execute os testes de autorização descritos abaixo.
-6. Somente após os testes, mescle a branch no GitHub para a produção.
+## Como acessar o novo login com senha
 
-## Validação obrigatória
+A versão de prévia oferece **entrar por e-mail e senha**, **criar conta** e **recuperar senha**. Não utiliza mais magic link para cada login: e-mails são necessários somente para confirmar a criação da conta e para recuperar a senha, se solicitado.
 
-- Um usuário sem login não lê nem escreve qualquer movimento.
-- O primeiro usuário cria a família e um convite temporário. O segundo entra com sua própria conta e usa o convite.
-- Ambos veem despesas, metas e mensagens da mesma família em dispositivos diferentes após a atualização/realtime.
-- Um usuário de OUTRA família não consulta movimentos nem mensagens.
-- Receita aumenta uma carteira; despesa diminui; transferência é neutra no patrimônio; aporte é neutro e aumenta a meta; resgate é neutro e devolve à carteira.
-- Atualizar/excluir um lançamento altera saldos nos dois dispositivos.
-- Importação de histórico local é intencionalmente DESABILITADA nesta primeira etapa para evitar registros duplicados e vazamentos.
+**Não reutilizar `VTS2 / 1409` como credencial pública**: a senha curta e compartilhada do protótipo não é autenticação válida de produção. Cada pessoa deve criar sua própria senha forte (mínimo de 8 caracteres no formulário).
 
-## Segurança
+Acesse o endereço estável da branch:
+https://nosso-financeiro-vt-gi-git-f7e55e-vithor-nascimento01s-projects.vercel.app/cloud.html
 
-Esta aplicação é um protótipo financeiro. Não oferece integração bancária nem WhatsApp real. RLS é obrigatória, não é suficiente publicar HTML com senha hardcoded. As contas de usuários usam o provedor de autenticação Supabase, e o banco armazena movimentos sem tokens privados no browser.
+### Autorizar o callback no Supabase
 
-## Padrão do código
+Em Authentication → URL Configuration, adicione exatamente o endereço **estável** acima em Redirect URLs. Endereços de deployments individuais, como `*-4faqwheip.vercel.app`, mudam a cada publicação e devem ser evitados para login; mantenha o endereço da branch como callback.
 
-- `cloud.html` / `cloud.js`: interface e sincronização.
-- `api/public-config.js`: fornece **somente** os dados publicáveis da conexão, lidos do ambiente Vercel.
-- `supabase/migrations/20261021_initial.sql`: tabelas e controles de acesso.
-- `index.html`: versão local de demonstração mantida isolada.
+Site URL de produção:
+https://nosso-financeiro-vt-github.vercel.app
+
+No painel de Authentication → Sign In / Providers → Email, verifique se o provedor Email está habilitado e se a confirmação de e-mail está configurada. O Supabase gratuito pode limitar os e-mails enviados com o remetente padrão.
+
+### Fluxo de uso
+
+1. Vithor cria a primeira conta usando **e-mail próprio e senha forte** e confirma o e-mail se necessário.
+2. Após login, clica em **Criar nossa família**.
+3. Em Metas → **Gerar convite**, copia o código e envia em privado para Thaynara.
+4. Thaynara cria conta com **seu próprio e-mail e outra senha forte**, confirma o e-mail e utiliza **Entrar pelo convite**.
+5. Testar dois aparelhos: lançamento num celular, verificação no outro; atualização, exclusão, metas e chat.
+6. Só depois de testar RLS, sessões e sincronização, mesclar a branch em `main`.
+
+### Vercel
+
+No projeto `nosso-financeiro-vt-github`, o Marketplace Supabase provisionou variáveis de ambiente. A rota `/api/public-config` lê apenas as chaves **publicáveis**:
+- `NEXT_PUBLIC_SUPABASE_URL` ou `SUPABASE_URL`;
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_ANON_KEY` ou `SUPABASE_PUBLISHABLE_KEY`.
+
+Nunca colocar service role, senhas ou chaves privadas no frontend nem no GitHub. A rota publicável responde 503 se a integração não estiver ativa.
+
+### Segurança e testes obrigatórios
+
+- Validar que usuários sem login não conseguem acessar lançamentos.
+- Confirmar que uma terceira conta de outra família não lê, altera nem exclui dados do casal.
+- Verificar que somente o autor consegue editar/excluir seus próprios lançamentos.
+- Validar os saldos de receita, despesa, transferência, aporte e resgate sem duplicação.
+- Confirmar atualização entre aparelhos e após retornar do modo de espera do iPhone.
+- Importação do histórico local continua desligada intencionalmente.
+- O chat é compartilhado dentro do app, **não é integração real com WhatsApp**.
+- A integração de bancos financeiros não está implementada.
+
+### Código
+
+- `cloud.html` / `cloud.js`: interface móvel e Supabase Auth + dados.
+- `api/public-config.js`: configuração publicável carregada da Vercel.
+- `supabase/migrations/20261021_initial.sql`: esquema PostgreSQL e políticas RLS.
+- `index.html`: versão de demonstração local preservada.
