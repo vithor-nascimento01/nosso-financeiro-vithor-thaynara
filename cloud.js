@@ -446,10 +446,11 @@
     }catch(err){feedback('resetStatus',authError(err));}
     finally{submitBusy(form,false);}
   });
+  $('backToGate').onclick=()=>{gatewayUnlocked=false;show('gate');};
   $('createFamily').onclick=createFamily;
   $('joinFamily').onclick=joinFamily;
   $('makeInvite').onclick=makeInvite;
-  $('logout').onclick=async()=>{gatewayUnlocked=false;quickUnlocked=false;pinDismissed=true;show('gate');$('connection').textContent='● Acesso do casal';};
+  $('logout').onclick=async()=>{gatewayUnlocked=false;quickUnlocked=false;pinDismissed=true;for(const id of ['entries','recent','messages','goalCards','accounts','stats']){if($(id))$(id).textContent='';}show('gate');$('connection').textContent='● Acesso do casal';};
   $('newMovement').onclick=()=>editMovement();
   $('cancelEntry').onclick=()=>{$('entryFormWrapper').hidden=true;};
   $('entryForm').onsubmit=saveMovement;
