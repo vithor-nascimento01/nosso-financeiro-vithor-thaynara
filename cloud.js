@@ -7,7 +7,8 @@
   const today = () => new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   const name = slot => slot === 'v' ? 'Vithor' : slot === 't' ? 'Thaynara' : 'Conjunta';
   let api, user, household, slot, channel, refreshTimer, polling, editing = null, refreshing = false;
-  let recovering = false;
+  let recovering = false, quickUnlocked = false, pinDismissed = false;
+  let pinFailures = 0, pinLockedUntil = 0;
   let movements = [], goals = [], settings = [], messages = [];
   function show(id) {
     document.body.classList.toggle('auth-screen',id!=='workspace');
@@ -69,7 +70,13 @@
       show('login');$('connection').textContent='● Acesso seguro';
       return;
     }
+    if(user?.id && user.id!==account.id){quickUnlocked=false;pinDismissed=false;}
     user=account;
+    const storedPIN=readDevicePin();
+    if(storedPIN && !quickUnlocked){
+      show('quicklock');$('connection').textContent='● Acesso rápido';
+      return;
+    }
     const result=await api.rpc('current_household');
     if(result.error) return fail(result.error);
     if(!result.data) {
@@ -81,6 +88,10 @@
     const myRole=await api.rpc('my_slot',{p_household:household});
     if(myRole.error)return fail(myRole.error);
     slot=myRole.data;
+    if(!storedPIN && !pinDismissed && window.crypto?.subtle){
+      show('pinSetup');$('connection').textContent='● Acesso seguro';
+      return;
+    }
     $('memberName').textContent=name(slot);
     show('workspace');$('connection').textContent='● Sincronizado';
     await loadData();
@@ -261,6 +272,60 @@
     if(res.error)return fail(res.error);
     $('message').value='';await loadData();
   }
+
+  // O PIN é uma trava de conveniência local. Ele NÃO é autenticação remota
+  // e só funciona depois que o Supabase tiver uma sessão real deste usuário.
+  const devicePinKey = () => user ? 'nfvt-local-pin-v1-'+user.id : null;
+  function readDevicePin(){
+    try {return JSON.parse(localStorage.getItem(devicePinKey())||'null');}
+    catch(e){return null;}
+  }
+  async function pinDigest(pin,salt){
+    const bytes=new TextEncoder().encode('nfvt-pin-v1:'+salt+':'+pin);
+    const raw=await crypto.subtle.digest('SHA-256',bytes);
+    return Array.from(new Uint8Array(raw)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function pinFeedback(id,message){$(id).textContent=message;}
+  $('pinSetupForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const pin=$('setupPin').value,confirm=$('setupPinConfirm').value;
+    if(!/^\d{4}$/.test(pin))return pinFeedback('pinSetupStatus','Informe um PIN de 4 dígitos.');
+    if(pin!==confirm)return pinFeedback('pinSetupStatus','Os dois PINs precisam ser iguais.');
+    if(!user || !window.crypto?.subtle)return pinFeedback('pinSetupStatus','Sessão não disponível. Entre novamente pela conta segura.');
+    const salt=Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const hash=await pinDigest(pin,salt);
+    try {localStorage.setItem(devicePinKey(),JSON.stringify({salt,hash}));}
+    catch(e){return pinFeedback('pinSetupStatus','Não foi possível salvar o PIN neste navegador. Continue sem PIN.');}
+    $('setupPin').value='';$('setupPinConfirm').value='';
+    quickUnlocked=true;
+    await loadSession();
+  });
+  $('skipPin').onclick=async()=>{pinDismissed=true;await loadSession();};
+  $('quickForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    const alias=$('quickUser').value.trim().toUpperCase(),pin=$('quickPin').value,config=readDevicePin();
+    if(Date.now()<pinLockedUntil)return pinFeedback('quickStatus','Muitas tentativas. Aguarde alguns minutos.');
+    if(alias!=='VTS2'||!config||!/^\d{4}$/.test(pin)){
+      pinFeedback('quickStatus','Login ou PIN inválido.');return;
+    }
+    const actual=await pinDigest(pin,config.salt);
+    $('quickPin').value='';
+    if(actual!==config.hash){
+      pinFailures++;
+      if(pinFailures>=5){pinLockedUntil=Date.now()+5*60*1000;pinFailures=0;}
+      pinFeedback('quickStatus','Login ou PIN inválido.');
+      return;
+    }
+    pinFailures=0;
+    quickUnlocked=true;
+    pinFeedback('quickStatus','Acesso liberado neste aparelho.');
+    await loadSession();
+  });
+  $('useSecureAccount').onclick=async()=>{
+    quickUnlocked=false;pinDismissed=false;
+    await api.auth.signOut();
+    await loadSession();
+  };
   const redirectTo = () => location.origin + '/cloud.html';
   const feedback = (id, message) => { $(id).textContent=message; };
   const authError = err => {
@@ -361,7 +426,7 @@
   $('createFamily').onclick=createFamily;
   $('joinFamily').onclick=joinFamily;
   $('makeInvite').onclick=makeInvite;
-  $('logout').onclick=async()=>{if(polling)clearInterval(polling);await api.auth.signOut();await loadSession();};
+  $('logout').onclick=async()=>{if(polling)clearInterval(polling);quickUnlocked=false;pinDismissed=false;await api.auth.signOut();await loadSession();};
   $('newMovement').onclick=()=>editMovement();
   $('cancelEntry').onclick=()=>{$('entryFormWrapper').hidden=true;};
   $('entryForm').onsubmit=saveMovement;
