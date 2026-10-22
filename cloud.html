@@ -62,6 +62,35 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 </div>
 <p id="loginStatus" class="description" role="status" aria-live="polite"></p>
 </section>
+<section id="quicklock" hidden class="card">
+<h2>Bem-vindos de volta ♡</h2>
+<p class="description">Desbloqueio rápido neste aparelho. A conta segura já foi vinculada anteriormente.</p>
+<form id="quickForm">
+<label for="quickUser">Login</label>
+<input id="quickUser" type="text" required autocomplete="username" autocapitalize="characters" value="VTS2">
+<label for="quickPin">Senha de acesso rápido</label>
+<input id="quickPin" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" placeholder="••••">
+<button class="btn wide" type="submit">Entrar no Nosso Financeiro</button>
+</form>
+<p id="quickStatus" class="description" role="status" aria-live="polite"></p>
+<button type="button" class="btnoutline" id="useSecureAccount">Entrar por outra conta</button>
+<p class="description">Este PIN desbloqueia o aplicativo somente depois do primeiro login seguro neste aparelho.</p>
+</section>
+<section id="pinSetup" hidden class="card">
+<h2>Ativar acesso rápido ♡</h2>
+<p class="description">Sua conta está conectada. Para as próximas aberturas neste aparelho, configure o login <b>VTS2</b> com um PIN de quatro dígitos. O PIN não substitui a proteção da conta online.</p>
+<form id="pinSetupForm">
+<label for="setupLogin">Login rápido</label>
+<input id="setupLogin" type="text" value="VTS2" disabled>
+<label for="setupPin">PIN de 4 dígitos</label>
+<input id="setupPin" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" placeholder="••••">
+<label for="setupPinConfirm">Confirme o PIN</label>
+<input id="setupPinConfirm" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" placeholder="••••">
+<button class="btn wide" type="submit">Ativar acesso rápido</button>
+</form>
+<p id="pinSetupStatus" class="description" role="status" aria-live="polite"></p>
+<button class="btnoutline" type="button" id="skipPin">Continuar sem PIN</button>
+</section>
 <section id="signup" hidden class="card">
 <h2>Criar meu login</h2>
 <p class="description">Cada pessoa precisa ter seu próprio e-mail e uma senha forte. O convite do casal será feito após o acesso.</p>
