@@ -1,5 +1,6 @@
 -- Nosso Financeiro • esquema de sincronização e autenticação com Supabase
--- Aplicar no SQL Editor de um projeto Supabase recém-criado.
+-- Configuração repetível: recria apenas as políticas RLS se já existirem.
+-- Não remove tabelas nem movimentos financeiros.
 -- NÃO compartilhar chaves service_role nem executar sem revisar o projeto de destino.
 
 create extension if not exists pgcrypto;
@@ -190,36 +191,49 @@ alter table public.person_settings enable row level security;
 alter table public.movements enable row level security;
 alter table public.chat_messages enable row level security;
 
+drop policy if exists household_read on public.households;
 create policy household_read on public.households for select to authenticated
  using(public.is_household_member(id));
+drop policy if exists member_read on public.household_members;
 create policy member_read on public.household_members for select to authenticated
  using(public.is_household_member(household_id));
+drop policy if exists account_read on public.accounts;
 create policy account_read on public.accounts for select to authenticated
  using(public.is_household_member(household_id));
+drop policy if exists goal_read on public.goals;
 create policy goal_read on public.goals for select to authenticated
  using(public.is_household_member(household_id));
+drop policy if exists goal_update on public.goals;
 create policy goal_update on public.goals for update to authenticated
  using(public.is_household_member(household_id))
  with check(public.is_household_member(household_id));
+drop policy if exists settings_read on public.person_settings;
 create policy settings_read on public.person_settings for select to authenticated
  using(public.is_household_member(household_id));
+drop policy if exists settings_update on public.person_settings;
 create policy settings_update on public.person_settings for update to authenticated
  using(public.is_household_member(household_id))
  with check(public.is_household_member(household_id));
+drop policy if exists movements_read on public.movements;
 create policy movements_read on public.movements for select to authenticated
  using(public.is_household_member(household_id));
+drop policy if exists movements_insert on public.movements;
 create policy movements_insert on public.movements for insert to authenticated
  with check(public.is_household_member(household_id)
    and author_id=auth.uid()
    and person=public.my_slot(household_id));
+drop policy if exists movements_update on public.movements;
 create policy movements_update on public.movements for update to authenticated
  using(public.is_household_member(household_id) and author_id=auth.uid())
  with check(public.is_household_member(household_id)
    and author_id=auth.uid() and person=public.my_slot(household_id));
+drop policy if exists movements_delete on public.movements;
 create policy movements_delete on public.movements for delete to authenticated
  using(public.is_household_member(household_id) and author_id=auth.uid());
+drop policy if exists messages_read on public.chat_messages;
 create policy messages_read on public.chat_messages for select to authenticated
  using(public.is_household_member(household_id));
+drop policy if exists messages_insert on public.chat_messages;
 create policy messages_insert on public.chat_messages for insert to authenticated
  with check(public.is_household_member(household_id)
  and sender_id=auth.uid() and sender_slot=public.my_slot(household_id));
