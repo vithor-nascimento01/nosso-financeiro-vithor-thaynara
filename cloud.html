@@ -38,6 +38,7 @@ label{font-size:12px;font-weight:700;color:#6f5b48}
 .error{color:#b74b4b;font-size:12px}.alert{background:#fcead1;border:1px solid #ebc89a;border-radius:12px;padding:12px;font-size:12px;line-height:1.5;color:#69491f}
 code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 @media(min-width:750px){.hero{padding:35px}.site{padding:28px 35px;border-radius:24px;margin-bottom:25px}.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.nav{left:50%;transform:translateX(-50%);max-width:550px;border-radius:18px 18px 0 0}}
+[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -46,7 +47,52 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <h2>Nosso dinheiro,<br>nosso futuro.</h2><p>Um registro, os dois celulares. ♡</p></header>
 <main class="site">
 <section id="setup" class="card"><h2>Preparando conexão</h2><p id="setupText" class="description">Validando o acesso ao banco privado.</p></section>
-<section id="login" hidden class="card"><h2>Acesso individual</h2><p class="description">Cada um entra com o próprio e-mail. Enviaremos um link de confirmação, sem senha compartilhada.</p><form id="loginForm"><label for="email">Seu e-mail</label><input type="email" id="email" required autocomplete="email" placeholder="seu@email.com"><button class="btn wide">Enviar link de acesso</button></form><p id="loginStatus" class="description"></p></section>
+<section id="login" hidden class="card">
+<h2>Entrar no Nosso Financeiro ♡</h2>
+<p class="description">Acesso com login e senha, como antes — agora protegido pelo Supabase e com uma conta para cada pessoa.</p>
+<form id="loginForm">
+<label for="email">Login (seu e-mail)</label>
+<input type="email" id="email" required autocomplete="username" placeholder="seu@email.com">
+<label for="password">Senha</label>
+<input type="password" id="password" required autocomplete="current-password" placeholder="Sua senha" minlength="8">
+<button class="btn wide" type="submit">Entrar</button></form>
+<div class="row space" style="margin-top:15px;flex-wrap:wrap">
+<button class="btnoutline" id="openSignup" type="button">Primeiro acesso? Criar conta</button>
+<button class="btnoutline" id="openForgot" type="button">Esqueci a senha</button>
+</div>
+<p id="loginStatus" class="description" role="status" aria-live="polite"></p>
+</section>
+<section id="signup" hidden class="card">
+<h2>Criar meu login</h2>
+<p class="description">Cada pessoa precisa ter seu próprio e-mail e uma senha forte. O convite do casal será feito após o acesso.</p>
+<form id="signupForm">
+<label for="signupEmail">Seu e-mail</label>
+<input type="email" id="signupEmail" required autocomplete="email" placeholder="seu@email.com">
+<label for="signupPassword">Criar senha (mínimo de 8 caracteres)</label>
+<input type="password" id="signupPassword" required autocomplete="new-password" minlength="8">
+<label for="signupConfirm">Confirmar senha</label>
+<input type="password" id="signupConfirm" required autocomplete="new-password" minlength="8">
+<button class="btn wide" type="submit">Criar conta segura</button></form>
+<p id="signupStatus" class="description" role="status" aria-live="polite"></p>
+<button class="btnoutline" type="button" data-go-login>Voltar ao login</button>
+</section>
+<section id="forgot" hidden class="card">
+<h2>Recuperar senha</h2>
+<p class="description">Você receberá um e-mail seguro para cadastrar uma nova senha.</p>
+<form id="forgotForm"><label for="forgotEmail">Seu e-mail</label>
+<input type="email" id="forgotEmail" required autocomplete="email" placeholder="seu@email.com">
+<button class="btn wide" type="submit">Enviar recuperação</button></form>
+<p id="forgotStatus" class="description" role="status" aria-live="polite"></p>
+<button class="btnoutline" type="button" data-go-login>Voltar ao login</button>
+</section>
+<section id="setPassword" hidden class="card">
+<h2>Definir nova senha</h2><p class="description">Crie uma senha forte para sua conta.</p>
+<form id="resetPasswordForm">
+<label for="resetPassword">Nova senha (mínimo de 8 caracteres)</label><input id="resetPassword" type="password" required autocomplete="new-password" minlength="8">
+<label for="resetConfirm">Confirmar nova senha</label><input id="resetConfirm" type="password" required autocomplete="new-password" minlength="8">
+<button type="submit" class="btn wide">Salvar nova senha</button></form>
+<p id="resetStatus" class="description" role="status" aria-live="polite"></p>
+</section>
 <section id="household" hidden class="card"><h2>Unir os dois celulares</h2><p class="description">O primeiro usuário cria a família. Depois, copie o código de convite e envie ao outro. O segundo entra com seu e-mail e utiliza o convite.</p>
 <div class="grid"><div class="card"><button class="btn wide" id="createFamily">Criar nossa família</button></div><div class="card"><label>Código recebido</label><input id="inviteInput" placeholder="Cole o código de convite"><button class="btnoutline wide" id="joinFamily">Entrar pelo convite</button></div></div>
 <p class="error" id="familyError"></p></section>
