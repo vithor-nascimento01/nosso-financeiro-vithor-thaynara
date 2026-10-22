@@ -11,6 +11,7 @@
   let gatewayFailures = 0, gatewayLockedUntil = 0;
   let pinFailures = 0, pinLockedUntil = 0;
   let movements = [], goals = [], settings = [], messages = [];
+  let pendingFinance = null;
   const INVITE_KEY = 'nfvt-pending-invite-v1';
   let activeInviteLink = '';
   function inviteIsValid(code){
@@ -327,13 +328,112 @@
     }catch(err){$('inviteResult').textContent=err?.message||'Não foi possível gerar o convite.';}
     finally{button.disabled=false;}
   }
-  async function sendMessage(e){
-    e.preventDefault();const text=$('message').value.trim();if(!text)return;
-    const res=await api.from('chat_messages').insert({
+  function clearFinanceDraft(){
+    pendingFinance=null;
+    $('financeDraft').hidden=true;
+    $('draftError').textContent='';
+    $('draftConfirm').disabled=false;
+    $('draftConfirm').textContent='✓ Confirmar registro';
+  }
+  function presentFinanceDraft(item){
+    pendingFinance=item;
+    $('draftAmount').textContent=BRL(item.amount);
+    $('draftType').textContent=item.kind==='expense'?'Despesa':'Receita';
+    $('draftTitle').textContent='♡ Entendi sua mensagem!';
+    $('draftWarning').textContent=item.needsReview
+      ? 'Encontrei mais de um número. Confira com atenção: o valor sugerido pode não ser o total.'
+      : 'Confirme ou corrija os dados antes de salvar no Extrato compartilhado.';
+    $('draftDescription').value=item.description;
+    $('draftCategory').value=item.category;
+    $('draftAccount').value=slot;
+    $('draftDate').value=item.occurred_on;
+    $('draftError').textContent='';
+    $('financeDraft').hidden=false;
+    $('draftConfirm').disabled=false;
+    $('draftConfirm').textContent='✓ Confirmar registro';
+    $('financeDraft').scrollTop=0;
+  }
+  async function postChatText(text){
+    const result=await api.from('chat_messages').insert({
       household_id:household,sender_id:user.id,sender_slot:slot,body:text
     });
-    if(res.error)return fail(res.error);
-    $('message').value='';await loadData();
+    if(result.error)throw result.error;
+    return true;
+  }
+  async function sendMessage(e){
+    e.preventDefault();
+    const text=$('message').value.trim();
+    if(!text || !api || !household || !user || !['v','t'].includes(slot))return;
+    const parsed=window.NFVTFinance?.parse?.(text);
+    if(parsed){
+      presentFinanceDraft(parsed);
+      return;
+    }
+    clearFinanceDraft();
+    const form=$('messageForm'),button=form.querySelector('button[type=submit]');
+    button.disabled=true;
+    try{
+      await postChatText(text);
+      if($('message').value.trim()===text)$('message').value='';
+      await loadData();
+    }catch(err){fail(err);}
+    finally{button.disabled=false;}
+  }
+  async function confirmFinanceDraft(){
+    if(!pendingFinance)return;
+    if(!api||!user||!household||!['v','t'].includes(slot)){
+      $('draftError').textContent='Sua conta precisa estar conectada para registrar.';return;
+    }
+    const item=pendingFinance;
+    if($('message').value.trim()!==item.original){
+      $('draftError').textContent='A mensagem foi alterada. Toque em enviar novamente para revisar os dados.';return;
+    }
+    const description=$('draftDescription').value.trim().slice(0,150);
+    const category=$('draftCategory').value;
+    const account=$('draftAccount').value;
+    const date=$('draftDate').value;
+    if(!description || !['v','t','shared'].includes(account) || !/^\d{4}-\d{2}-\d{2}$/.test(date)){
+      $('draftError').textContent='Verifique descrição, carteira e data.';return;
+    }
+    if(!Number.isFinite(item.amount)||item.amount<=0){
+      $('draftError').textContent='O valor não é válido.';return;
+    }
+    const fields={
+      household_id:household,kind:item.kind,person:slot,author_id:user.id,
+      amount:item.amount,from_code:item.kind==='expense'?account:null,
+      to_code:item.kind==='income'?account:null,goal_code:null,
+      description,category,occurred_on:date
+    };
+    const button=$('draftConfirm');
+    button.disabled=true;
+    button.textContent='Salvando...';
+    let saved=false;
+    try{
+      // Somente a confirmação grava o movimento. A RLS valida usuário e família.
+      const response=await api.from('movements').insert(fields).select('id');
+      if(response.error)throw response.error;
+      if(!response.data?.length)throw new Error('O lançamento não foi autorizado.');
+      saved=true;
+      try{
+        const categoryText=category==='Outros'?'':', '+category;
+        const msg='✓ Registrado: '+(item.kind==='expense'?'despesa':'receita')+
+          ' de '+BRL(item.amount)+' — '+description+categoryText+'.';
+        await postChatText(msg);
+      }catch(chatError){
+        // Nunca tenta gravar o movimento novamente só porque a mensagem falhou.
+        console.warn('Movimento salvo. Aviso no chat não enviado.',chatError);
+      }
+      if($('message').value.trim()===item.original)$('message').value='';
+      clearFinanceDraft();
+      await loadData();
+    }catch(err){
+      $('draftError').textContent=saved
+        ? 'Lançamento salvo. Atualize o Extrato para conferir.'
+        : 'Não foi possível salvar: '+(err?.message||'verifique sua conexão.');
+    }finally{
+      button.disabled=false;
+      button.textContent='✓ Confirmar registro';
+    }
   }
 
   // O PIN é uma trava de conveniência local. Ele NÃO é autenticação remota
@@ -527,6 +627,24 @@
   $('entryForm').onsubmit=saveMovement;
   $('removeEntry').onclick=removeMovement;
   $('messageForm').onsubmit=sendMessage;
+  $('draftConfirm').onclick=confirmFinanceDraft;
+  $('draftCancel').onclick=()=>clearFinanceDraft();
+  $('draftSendText').onclick=async()=>{
+    const text=pendingFinance?.original;
+    if(!text || !api || !household)return;
+    const button=$('draftSendText');
+    button.disabled=true;
+    try{
+      await postChatText(text);
+      if($('message').value.trim()===text)$('message').value='';
+      clearFinanceDraft();
+      await loadData();
+    }catch(err){$('draftError').textContent='Não foi possível enviar: '+(err?.message||'erro de conexão.');}
+    finally{button.disabled=false;}
+  };
+  $('message').addEventListener('input',()=>{
+    if(pendingFinance && $('message').value.trim()!==pendingFinance.original)clearFinanceDraft();
+  });
   $('entries').addEventListener('click',e=>{
     const btn=e.target.closest('[data-edit]');
     if(btn)editMovement(btn.dataset.edit);
