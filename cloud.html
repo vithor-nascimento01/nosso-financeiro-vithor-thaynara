@@ -38,6 +38,18 @@ label{font-size:12px;font-weight:700;color:#6f5b48}
 .error{color:#b74b4b;font-size:12px}.alert{background:#fcead1;border:1px solid #ebc89a;border-radius:12px;padding:12px;font-size:12px;line-height:1.5;color:#69491f}
 code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 @media(min-width:750px){.hero{padding:35px}.site{padding:28px 35px;border-radius:24px;margin-bottom:25px}.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.nav{left:50%;transform:translateX(-50%);max-width:550px;border-radius:18px 18px 0 0}}
+.finance-draft{background:#fffaf3;border-top:2px solid #d3a76c;padding:13px 14px;max-height:54dvh;overflow-y:auto;box-shadow:0 -4px 20px #6246282a;flex-shrink:0}
+.finance-draft strong{display:block;font:normal 18px Georgia,serif;color:#594027}
+.finance-draft-top{display:flex;align-items:baseline;gap:13px;margin-top:6px}
+.finance-draft-top span:first-child{font-size:26px;color:#255f49;font-weight:850}
+.finance-draft-top span:last-child{color:#72543c;font-weight:700}
+.finance-draft .description{margin:5px 0 8px}
+.finance-draft-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.finance-draft-grid label{display:block}
+.finance-draft-grid input,.finance-draft-grid select{margin:4px 0 9px;padding:9px 11px}
+.finance-draft-actions{display:flex;gap:7px;flex-wrap:wrap}
+.finance-draft-actions button{flex:1 1 auto;padding:10px;font-size:12px}
+@media(max-width:400px){.finance-draft-grid{grid-template-columns:1fr 1fr}.finance-draft-actions button{flex-basis:100%}}
 [hidden]{display:none!important}
 </style>
 <link rel="stylesheet" href="./login-theme.css">
@@ -149,14 +161,31 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <label>Conta de origem</label><select id="mFrom"><option value="v">Vithor</option><option value="t">Thaynara</option><option value="shared">Conjunta</option></select>
 <label>Conta de destino</label><select id="mTo"><option value="v">Vithor</option><option value="t">Thaynara</option><option value="shared">Conjunta</option></select>
 <label>Meta</label><select id="mGoal"></select>
-<label>Categoria</label><select id="mCategory"><option>Alimentação</option><option>Moradia</option><option>Transporte</option><option>Saúde</option><option>Educação</option><option>Lazer</option><option>Outros</option></select>
+<label>Categoria</label><select id="mCategory"><option>Alimentação</option><option>Moradia</option><option>Transporte</option><option>Saúde</option><option>Educação</option><option>Lazer</option><option>Outros</option><option>Renda</option><option>Pets</option><option>Assinaturas</option><option>Compras</option></select>
 <div class="row"><button class="btn">Salvar</button><button type="button" class="btnoutline" id="cancelEntry">Cancelar</button><button type="button" class="btnoutline red" id="removeEntry" hidden>Excluir</button></div><p id="entryError" class="error"></p></form></section></section>
 <section class="tab" id="dreams"><h3>Nossos sonhos</h3><p class="description">As metas e os aportes são compartilhados entre as duas contas.</p><div id="goalCards" class="grid" style="margin-bottom:15px"></div><div class="card"><h3>Convite para o parceiro</h3><p class="description">Convite válido por 48 horas e utilizável somente uma vez.</p><button class="btnoutline" id="makeInvite">Gerar link de convite</button><div class="row" style="flex-wrap:wrap;margin-top:12px"><a class="btn" id="inviteWhatsapp" href="#" target="_blank" rel="noopener noreferrer" hidden>Enviar pelo WhatsApp</a><button type="button" class="btnoutline" id="inviteCopy" hidden>Copiar link</button></div><p id="inviteResult" class="description" role="status" aria-live="polite"></p></div></section>
-<section class="tab" id="conversation"><div class="chat"><div class="chathead"><b>♡ Grupo Nosso Financeiro</b><small>Mensagens compartilhadas; assistente automático ainda não conectado</small></div><div class="chatmessages" id="messages"></div><form class="composer" id="messageForm"><input id="message" maxlength="2000" autocomplete="off" aria-label="Mensagem" placeholder="Escreva para o casal..."><button aria-label="Enviar">➤</button></form></div></section>
+<section class="tab" id="conversation"><div class="chat"><div class="chathead"><b>♡ Grupo Nosso Financeiro</b><small>Experimente: “Gastei 35 no mercado”. Confirme antes de registrar.</small></div>
+<div class="chatmessages" id="messages"></div>
+<div id="financeDraft" class="finance-draft" hidden>
+<strong id="draftTitle">Confirmar lançamento</strong>
+<div class="finance-draft-top"><span id="draftAmount">R$ 0,00</span><span id="draftType">Despesa</span></div>
+<p id="draftWarning" class="description">Confira os dados antes de salvar no Extrato.</p>
+<div class="finance-draft-grid">
+<label>Descrição<input id="draftDescription" maxlength="150" placeholder="Descrição" required></label>
+<label>Categoria<select id="draftCategory"><option>Alimentação</option><option>Moradia</option><option>Transporte</option><option>Saúde</option><option>Educação</option><option>Lazer</option><option>Pets</option><option>Assinaturas</option><option>Compras</option><option>Renda</option><option>Outros</option></select></label>
+<label>Carteira<select id="draftAccount"><option value="v">Vithor</option><option value="t">Thaynara</option><option value="shared">Conjunta</option></select></label>
+<label>Data<input type="date" id="draftDate" required></label>
+</div>
+<p id="draftError" class="error" role="alert"></p>
+<div class="finance-draft-actions"><button type="button" id="draftConfirm" class="btn">✓ Confirmar registro</button><button type="button" id="draftCancel" class="btnoutline">Cancelar</button><button type="button" id="draftSendText" class="btnoutline">Só enviar mensagem</button></div>
+</div>
+<form class="composer" id="messageForm"><input id="message" maxlength="2000" autocomplete="off" aria-label="Mensagem" placeholder="Ex.: Gastei 35 no mercado" required><button type="submit" aria-label="Enviar mensagem">➤</button></form>
+</div></section>
 <nav class="nav"><button class="active" data-tab="dashboard"><b>⌂</b>Início</button><button data-tab="ledger"><b>☷</b>Extrato</button><button data-tab="dreams"><b>♡</b>Metas</button><button data-tab="conversation"><b>◉</b>Chat</button></nav>
 </section>
 </main>
 </div>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script defer src="./finance-parser.js"></script>
 <script defer src="./cloud.js"></script>
 </body></html>
