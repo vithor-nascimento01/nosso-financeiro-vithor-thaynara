@@ -11,9 +11,56 @@
   let gatewayFailures = 0, gatewayLockedUntil = 0;
   let pinFailures = 0, pinLockedUntil = 0;
   let movements = [], goals = [], settings = [], messages = [];
+  const INVITE_KEY = 'nfvt-pending-invite-v1';
+  let activeInviteLink = '';
+  function inviteIsValid(code){
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code || '');
+  }
+  function pendingInvite(){
+    try{
+      const data=JSON.parse(localStorage.getItem(INVITE_KEY)||'null');
+      if(data && inviteIsValid(data.code) && Number(data.until)>Date.now())return data.code;
+      localStorage.removeItem(INVITE_KEY);
+    }catch(e){/* Navegador pode bloquear armazenamento. */}
+    return '';
+  }
+  function captureInvite(){
+    // O fragmento (#convite=...) não é enviado ao servidor ou às ferramentas de análise.
+    if(!location.hash.startsWith('#convite='))return;
+    const code=location.hash.slice('#convite='.length).trim();
+    if(inviteIsValid(code)){
+      try{localStorage.setItem(INVITE_KEY,JSON.stringify({code,until:Date.now()+48*60*60*1000}));}
+      catch(e){window.__nfvtInvitation=code;}
+    }
+    // Remove o token da barra de endereços assim que o convite é recebido.
+    try{history.replaceState(history.state,'',location.pathname+location.search);}catch(e){}
+  }
+  function availableInvite(){
+    return pendingInvite() || (inviteIsValid(window.__nfvtInvitation) ? window.__nfvtInvitation : '');
+  }
+  function clearInvite(){
+    try{localStorage.removeItem(INVITE_KEY);}catch(e){}
+    delete window.__nfvtInvitation;
+  }
+  function inviteBaseURL(){
+    // URLs individuais de preview mudam a cada commit; o alias da branch é estável.
+    const branchURL='https://nosso-financeiro-vt-gi-git-f7e55e-vithor-nascimento01s-projects.vercel.app';
+    const transientPreview=/^nosso-financeiro-vt-github-[a-z0-9]+\.vercel\.app$/i.test(location.hostname);
+    return (transientPreview ? branchURL : location.origin) + '/cloud.html';
+  }
   function show(id) {
     document.body.classList.toggle('auth-screen',id!=='workspace');
     for (const key of ['setup','gate','login','signup','forgot','setPassword','quicklock','pinSetup','household','workspace']) $(key).hidden = key !== id;
+    if(id==='household'){
+      const code=availableInvite();
+      if(code){
+        $('inviteInput').value=code;
+        $('familyError').textContent='♡ Convite recebido! Toque em “Entrar pelo convite” para compartilhar o financeiro.';
+      }
+    }
+    if(id==='gate' && availableInvite()){
+      $('gateStatus').textContent='♡ Você recebeu um convite. Entre para vincular seu celular ao financeiro do casal.';
+    }
   }
   function notice(message, error=false) {
     $('setupText').textContent = message;
@@ -37,6 +84,7 @@
     return false;
   }
   async function init() {
+    captureInvite();
     try {
       const resp = await fetch('/api/public-config', {cache:'no-store'});
       const conf = await resp.json();
@@ -257,14 +305,27 @@
     }
     const res=await api.rpc('join_partner_by_invite',{p_code:token});
     if(res.error){$('familyError').textContent=res.error.message;return;}
+    clearInvite();
+    $('familyError').textContent='Convite aceito! Abrindo o financeiro compartilhado.';
     await loadSession();
   }
   async function makeInvite() {
     if(slot!=='v')return fail('O convite é criado pelo primeiro membro da família.');
-    const res=await api.rpc('create_partner_invite');
-    if(res.error)return fail(res.error);
-    const token=res.data;
-    $('inviteResult').textContent='Código: '+token+' — encaminhe somente ao parceiro. Expira em 48 horas.';
+    const button=$('makeInvite');
+    button.disabled=true;
+    $('inviteResult').textContent='Preparando o convite...';
+    try{
+      const res=await api.rpc('create_partner_invite');
+      if(res.error)throw res.error;
+      if(!inviteIsValid(res.data))throw new Error('O banco não retornou um convite válido.');
+      activeInviteLink=inviteBaseURL()+'#convite='+res.data;
+      const text='Amor, te convidei para o nosso financeiro ❤️ Abra este link no seu celular. Depois de entrar e criar sua conta online, toque em “Entrar pelo convite”. O convite já vai ficar preenchido: '+activeInviteLink;
+      $('inviteWhatsapp').href='https://wa.me/?text='+encodeURIComponent(text);
+      $('inviteWhatsapp').hidden=false;
+      $('inviteCopy').hidden=false;
+      $('inviteResult').textContent='Convite pronto! Envie pelo WhatsApp. Válido por 48 horas e para uso único.';
+    }catch(err){$('inviteResult').textContent=err?.message||'Não foi possível gerar o convite.';}
+    finally{button.disabled=false;}
   }
   async function sendMessage(e){
     e.preventDefault();const text=$('message').value.trim();if(!text)return;
@@ -450,6 +511,16 @@
   $('createFamily').onclick=createFamily;
   $('joinFamily').onclick=joinFamily;
   $('makeInvite').onclick=makeInvite;
+  $('inviteCopy').onclick=async()=>{
+    if(!activeInviteLink)return;
+    try{
+      if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(activeInviteLink);
+      else throw new Error('sem acesso');
+      $('inviteResult').textContent='Link copiado! Agora é só enviar à Thaynara. Expira em 48 horas.';
+    }catch(e){
+      window.prompt('Copie o convite para enviar à Thaynara:',activeInviteLink);
+    }
+  };
   $('logout').onclick=async()=>{gatewayUnlocked=false;quickUnlocked=false;pinDismissed=true;for(const id of ['entries','recent','messages','goalCards','accounts','stats']){if($(id))$(id).textContent='';}show('gate');$('connection').textContent='● Acesso do casal';};
   $('newMovement').onclick=()=>editMovement();
   $('cancelEntry').onclick=()=>{$('entryFormWrapper').hidden=true;};
