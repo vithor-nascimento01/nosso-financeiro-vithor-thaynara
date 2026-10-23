@@ -11,7 +11,7 @@
   let accountSwitching = false, authRevision = 0;
   let gatewayFailures = 0, gatewayLockedUntil = 0;
   let pinFailures = 0, pinLockedUntil = 0;
-  let movements = [], goals = [], settings = [], messages = [];
+  let movements = [], goals = [], settings = [], messages = [], householdMembers = [];
   let pendingFinance = null;
   const INVITE_KEY = 'nfvt-pending-invite-v1';
   let activeInviteLink = '';
@@ -158,7 +158,7 @@
     const alert=$('membershipAlert');
     alert.hidden=!(invitePending&&slot==='v');
     if(!alert.hidden)alert.textContent='Um convite de outra família está pendente, mas esta conta já foi criada com o perfil Vithor. Confira sua conta antes de registrar gastos.';
-    show('workspace');$('connection').textContent='● Sincronizado';
+    show('workspace');$('connection').textContent='● Banco conectado';
     await loadData();
     listen();
   }
@@ -167,15 +167,22 @@
     refreshing=true;
     try {
       const id=household;
-      const [a,b,c,d] = await Promise.all([
+      const [a,b,c,d,e] = await Promise.all([
         api.from('movements').select('*').eq('household_id',id).order('created_at',{ascending:true}),
         api.from('goals').select('*').eq('household_id',id).order('label'),
         api.from('person_settings').select('*').eq('household_id',id),
-        api.from('chat_messages').select('*').eq('household_id',id).order('created_at',{ascending:true}).limit(300)
+        api.from('chat_messages').select('*').eq('household_id',id).order('created_at',{ascending:true}).limit(300),
+        api.from('household_members').select('user_id,slot').eq('household_id',id)
       ]);
-      for(const res of [a,b,c,d])if(res.error)throw res.error;
+      for(const res of [a,b,c,d,e])if(res.error)throw res.error;
       if(id!==household)return;
       movements=a.data;goals=b.data;settings=c.data;messages=d.data;
+      householdMembers=e.data||[];
+      $('connection').textContent=householdMembers.length>=2?'● Dois membros conectados':'● Aguardando parceiro';
+      $('membershipAlert').hidden=householdMembers.length>=2;
+      if(householdMembers.length<2){
+        $('membershipAlert').textContent='Esta família financeira tem apenas um membro. A outra pessoa precisa entrar com a conta própria e aceitar o convite para os dados serem realmente compartilhados. Compare o identificador do grupo nos dois celulares.';
+      }
       draw();
     } catch(err) {fail(err);}
     finally {refreshing=false;}
@@ -652,7 +659,7 @@
     // A troca de conta deve mostrar a tela de login imediatamente no iPhone.
     gatewayUnlocked=true;quickUnlocked=false;pinDismissed=true;
     user=null;household=null;slot=null;
-    movements=[];goals=[];settings=[];messages=[];
+    movements=[];goals=[];settings=[];messages=[];householdMembers=[];
     if(polling){clearInterval(polling);polling=null;}
     if(channel){api.removeChannel(channel).catch(()=>{});channel=null;}
     show('login');
