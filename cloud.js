@@ -755,6 +755,31 @@
       window.scrollTo(0,0);
     };
   });
+  // Instalação como aplicativo progressivo — login seguro permanece online.
+  window.addEventListener('beforeinstallprompt', event=>{
+    event.preventDefault();
+    installPrompt=event;
+  });
+  const showInstallGuide=()=>{
+    const guide=$('appInstallGuide');
+    guide.hidden=false;
+    const iphone=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+    guide.textContent=iphone
+      ? 'No iPhone: abra o Nosso Financeiro no Safari (não no navegador do WhatsApp), toque em Compartilhar ⤴, escolha “Adicionar à Tela de Início” e confirme. O ícone V♡T aparecerá no celular.'
+      : 'No Android: abra o Nosso Financeiro no Chrome, toque nos três pontos ⋮ e escolha “Instalar aplicativo” ou “Adicionar à tela inicial”. Se disponível, use o botão de instalação.';
+    guide.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  $('installGuide').onclick=async()=>{
+    if(installPrompt){
+      const prompt=installPrompt;installPrompt=null;
+      try{await prompt.prompt();await prompt.userChoice;}
+      catch(err){showInstallGuide();}
+    }else showInstallGuide();
+  };
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./cloud-sw.js',{scope:'./cloud.html'})
+      .catch(error=>console.warn('Atalho funciona mesmo sem cache de instalação.',error)));
+  }
   document.addEventListener('visibilitychange',()=>{
     if(!document.hidden&&api&&household)refreshSoon();
   });
