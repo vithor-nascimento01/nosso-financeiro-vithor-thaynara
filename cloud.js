@@ -8,6 +8,7 @@
   const name = slot => slot === 'v' ? 'Vithor' : slot === 't' ? 'Thaynara' : 'Conjunta';
   let api, user, household, slot, channel, refreshTimer, polling, editing = null, refreshing = false;
   let recovering = false, quickUnlocked = false, pinDismissed = false, gatewayUnlocked = false;
+  let accountSwitching = false, authRevision = 0;
   let gatewayFailures = 0, gatewayLockedUntil = 0;
   let pinFailures = 0, pinLockedUntil = 0;
   let movements = [], goals = [], settings = [], messages = [];
@@ -104,7 +105,7 @@
           return;
         }
         // As consultas devem ocorrer fora do callback para evitar bloqueios do SDK.
-        if (!recovering) setTimeout(() => loadSession().catch(fail), 0);
+        if (!recovering && !accountSwitching) setTimeout(() => loadSession().catch(fail), 0);
       });
       if (!recovering) await loadSession();
     } catch(err) {
@@ -113,9 +114,11 @@
     }
   }
   async function loadSession() {
-    if(!api || recovering) return;
+    if(!api || recovering || accountSwitching) return;
+    const revision=authRevision;
     if(!gatewayUnlocked){show('gate');$('connection').textContent='● Acesso do casal';return;}
     const {data:{user:account},error} = await api.auth.getUser();
+    if(revision!==authRevision || accountSwitching)return;
     if(error && error.status !== 400) return fail(error);
     if(!account) {
       user=null;household=null;slot=null;
@@ -131,6 +134,7 @@
       return;
     }
     const result=await api.rpc('current_household');
+    if(revision!==authRevision || accountSwitching)return;
     if(result.error) return fail(result.error);
     if(!result.data) {
       show('household');
@@ -139,6 +143,7 @@
     }
     household=result.data;
     const myRole=await api.rpc('my_slot',{p_household:household});
+    if(revision!==authRevision || accountSwitching)return;
     if(myRole.error)return fail(myRole.error);
     slot=myRole.data;
     if(!storedPIN && !pinDismissed && window.crypto?.subtle){
@@ -642,20 +647,32 @@
   $('switchAccount').onclick=async()=>{
     const btn=$('switchAccount');
     btn.disabled=true;
+    accountSwitching=true;
+    authRevision++;
+    // A troca de conta deve mostrar a tela de login imediatamente no iPhone.
+    gatewayUnlocked=true;quickUnlocked=false;pinDismissed=true;
+    user=null;household=null;slot=null;
+    movements=[];goals=[];settings=[];messages=[];
+    if(polling){clearInterval(polling);polling=null;}
+    if(channel){api.removeChannel(channel).catch(()=>{});channel=null;}
+    show('login');
+    $('email').value='';$('password').value='';
+    $('loginStatus').textContent='Saindo da conta anterior neste aparelho...';
+    submitBusy($('loginForm'),true);
     try{
       if(!api)throw new Error('Sem conexão com o banco.');
-      const res=await api.auth.signOut();
+      // Não desconectar o Vithor dos outros aparelhos (escopo global é o padrão).
+      const res=await api.auth.signOut({scope:'local'});
       if(res.error)throw res.error;
-      gatewayUnlocked=true;quickUnlocked=false;pinDismissed=false;
-      user=null;household=null;slot=null;
-      movements=[];goals=[];settings=[];messages=[];
-      if(channel){await api.removeChannel(channel);channel=null;}
-      if(polling){clearInterval(polling);polling=null;}
-      show('login');
-      $('email').value='';$('password').value='';
-      $('loginStatus').textContent='Entre com seu próprio e-mail e senha para entrar no financeiro do casal.';
-    }catch(err){fail(err);}
-    finally{btn.disabled=false;}
+      $('loginStatus').textContent='Conta anterior desconectada. Entre com o e-mail e a senha da Thaynara.';
+      $('connection').textContent='● Trocar conta';
+    }catch(err){
+      $('loginStatus').textContent='Não foi possível encerrar a sessão anterior: '+(err?.message||'erro na conexão')+'. Confira a internet e toque em Trocar conta novamente.';
+    }finally{
+      accountSwitching=false;
+      btn.disabled=false;
+      submitBusy($('loginForm'),false);
+    }
   };
   $('logout').onclick=async()=>{gatewayUnlocked=false;quickUnlocked=false;pinDismissed=true;for(const id of ['entries','recent','messages','goalCards','accounts','stats']){if($(id))$(id).textContent='';}show('gate');$('connection').textContent='● Acesso do casal';};
   $('newMovement').onclick=()=>editMovement();
