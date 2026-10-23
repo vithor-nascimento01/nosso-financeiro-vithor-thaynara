@@ -60,6 +60,12 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 .bubble .register-chat{display:block;margin-top:7px;border:1px solid #b88c4e;background:#fbe9d0;color:#352316;border-radius:10px;padding:8px 10px;font-weight:700}
 .bubble.mine .register-chat{background:#fff5dd}
 @media(max-width:650px){.account-header{display:block!important}.account-header>.row{justify-content:flex-start!important;margin-top:13px}.account-header button{font-size:12px;padding:10px}}
+
+/* Atualizações automáticas: somente mostra aviso quando há edição em andamento. */
+.update-notice{margin:0 15px 8px;padding:13px 14px;background:#ffeed2;border:1px solid #d8ac75;border-radius:14px;color:#50341d;box-shadow:0 5px 17px #1d140a24;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.update-notice .btnoutline{padding:8px 12px;font-size:12px;white-space:nowrap}
+.update-notice b{font-size:13px}
+.update-notice small{font-size:11px;display:block;line-height:1.4}
 [hidden]{display:none!important}
 </style>
 <link rel="stylesheet" href="./login-theme.css">
@@ -71,6 +77,10 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <div class="app">
 <header class="hero"><div class="top"><div class="mark">V♡T</div><div class="brand"><h1>Nosso Financeiro</h1><small>VITHOR + THAYNARA</small></div><span id="connection" style="font-size:12px">● Conectando</span></div>
 <h2>Nosso dinheiro,<br>nosso futuro.</h2><p>Um registro, os dois celulares. ♡</p></header>
+<div id="updateNotice" class="update-notice" hidden role="status" aria-live="polite">
+<div><b>Nova versão disponível ♡</b><small>Finalize o que estiver preenchendo antes de atualizar.</small></div>
+<button type="button" class="btnoutline" id="updateNow">Atualizar agora</button>
+</div>
 <main class="site">
 <section id="setup" class="card"><h2>Preparando conexão</h2><p id="setupText" class="description">Validando o acesso ao banco privado.</p></section>
 <section id="gate" hidden class="card">
