@@ -146,6 +146,13 @@
       return;
     }
     $('memberName').textContent=name(slot);
+    $('accountEmail').textContent=user.email||'Conta não identificada';
+    $('familyIdentifier').textContent=String(household).slice(0,8).toUpperCase();
+    $('memberRole').textContent=name(slot);
+    const invitePending=availableInvite();
+    const alert=$('membershipAlert');
+    alert.hidden=!(invitePending&&slot==='v');
+    if(!alert.hidden)alert.textContent='Um convite de outra família está pendente, mas esta conta já foi criada com o perfil Vithor. Confira sua conta antes de registrar gastos.';
     show('workspace');$('connection').textContent='● Sincronizado';
     await loadData();
     listen();
