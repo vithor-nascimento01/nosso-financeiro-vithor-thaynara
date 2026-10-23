@@ -6,7 +6,7 @@
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const today = () => new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   const name = slot => slot === 'v' ? 'Vithor' : slot === 't' ? 'Thaynara' : 'Conjunta';
-  let api, user, household, slot, channel, refreshTimer, polling, editing = null, refreshing = false;
+  let api, user, household, slot, channel, refreshTimer, polling, editing = null, refreshing = false, refreshAgain = false;
   let recovering = false, quickUnlocked = false, pinDismissed = false, gatewayUnlocked = false;
   let accountSwitching = false, authRevision = 0;
   let gatewayFailures = 0, gatewayLockedUntil = 0;
@@ -163,7 +163,8 @@
     listen();
   }
   async function loadData() {
-    if(!api||!household||refreshing)return;
+    if(!api||!household)return false;
+    if(refreshing){refreshAgain=true;return false;}
     refreshing=true;
     try {
       const id=household;
@@ -184,8 +185,12 @@
         $('membershipAlert').textContent='Esta família financeira tem apenas um membro. A outra pessoa precisa entrar com a conta própria e aceitar o convite para os dados serem realmente compartilhados. Compare o identificador do grupo nos dois celulares.';
       }
       draw();
-    } catch(err) {fail(err);}
-    finally {refreshing=false;}
+      return true;
+    } catch(err) {fail(err);return false;}
+    finally {
+      refreshing=false;
+      if(refreshAgain){refreshAgain=false;setTimeout(()=>loadData().catch(fail),50);}
+    }
   }
   function refreshSoon(){
     clearTimeout(refreshTimer);
@@ -705,6 +710,7 @@
     }
   };
   $('logout').onclick=async()=>{gatewayUnlocked=false;quickUnlocked=false;pinDismissed=true;for(const id of ['entries','recent','messages','goalCards','accounts','stats']){if($(id))$(id).textContent='';}show('gate');$('connection').textContent='● Acesso do casal';};
+  $('refreshLedger').onclick=async()=>{const btn=$('refreshLedger');btn.disabled=true;try{await loadData();}finally{btn.disabled=false;}};
   $('newMovement').onclick=()=>editMovement();
   $('cancelEntry').onclick=()=>{$('entryFormWrapper').hidden=true;};
   $('entryForm').onsubmit=saveMovement;
@@ -713,8 +719,8 @@
   $('refreshChat').onclick=async()=>{
     const btn=$('refreshChat');btn.disabled=true;
     try{
-      await loadData();
-      $('chatActionStatus').textContent='↻ Conversa, Extrato e saldos atualizados.';
+      const ok=await loadData();
+      $('chatActionStatus').textContent=ok?'↻ Conversa, Extrato e saldos atualizados.':'Atualização em andamento. Confira novamente em alguns segundos.';
       $('chatActionStatus').hidden=false;
     }catch(err){
       $('chatActionStatus').textContent='Não foi possível atualizar. Confira a conexão.';
@@ -762,6 +768,7 @@
       document.querySelectorAll('.nav button').forEach(el=>el.classList.toggle('active',el===btn));
       document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.id===btn.dataset.tab));
       window.scrollTo(0,0);
+      if(['ledger','conversation','dashboard'].includes(btn.dataset.tab))refreshSoon();
     };
   });
   // Instalação como aplicativo progressivo — login seguro permanece online.
