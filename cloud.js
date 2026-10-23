@@ -792,12 +792,100 @@
       catch(err){showInstallGuide();}
     }else showInstallGuide();
   };
-  if('serviceWorker' in navigator && location.protocol==='https:'){
-    window.addEventListener('load',()=>navigator.serviceWorker.register('./cloud-sw.js',{scope:'./cloud.html'})
-      .catch(error=>console.warn('Atalho funciona mesmo sem cache de instalação.',error)));
+  // Atualizações da versão online: não interferem nos dados guardados no Supabase.
+  // Cada publicação Git da Vercel tem seu próprio identificador.
+  let openedVersion=null;
+  let availableVersion=null;
+  let checkingUpdate=false;
+  let lastVersionCheck=0;
+  const RECHECK_MS=5*60*1000;
+
+  function hasUnfinishedWork(){
+    if(pendingFinance || !$('entryFormWrapper').hidden)return true;
+    if(($('message').value||'').trim())return true;
+    const active=document.activeElement;
+    if(active?.matches('input, textarea, select, [contenteditable="true"]'))return true;
+    if(document.querySelector('form button[type="submit"]:disabled'))return true;
+    if($('draftConfirm').disabled && !$('financeDraft').hidden)return true;
+    return false;
   }
+  function applyAppUpdate(force=false){
+    if(!availableVersion || document.hidden)return;
+    if(!force && hasUnfinishedWork()){
+      $('updateNotice').hidden=false;
+      return;
+    }
+    const key='nfvt-applied-version';
+    try{
+      if(sessionStorage.getItem(key)===availableVersion){
+        $('updateNotice').hidden=true;availableVersion=null;return;
+      }
+      sessionStorage.setItem(key,availableVersion);
+    }catch(e){ /* A atualização funciona também sem armazenamento local. */ }
+    const target=new URL(location.href);
+    target.searchParams.set('app_ver',String(availableVersion).slice(0,12));
+    location.replace(target.href);
+  }
+  async function checkAppVersion(force=false){
+    if(checkingUpdate || !navigator.onLine)return;
+    if(!force && Date.now()-lastVersionCheck<30000)return;
+    checkingUpdate=true;
+    lastVersionCheck=Date.now();
+    try{
+      const resp=await fetch('/api/app-version',{cache:'no-store',headers:{'Accept':'application/json'}});
+      if(!resp.ok)return;
+      const data=await resp.json();
+      const latest=typeof data.version==='string'?data.version:'';
+      if(!/^[a-zA-Z0-9._-]{8,160}$/.test(latest))return;
+      if(!openedVersion){openedVersion=latest;return;}
+      if(latest!==openedVersion){
+        availableVersion=latest;
+        applyAppUpdate();
+      }
+    }catch(e){
+      // Sem internet, mantém a versão atual sem interromper nenhum lançamento.
+    }finally{checkingUpdate=false;}
+  }
+  $('updateNow').onclick=()=>{
+    if(!availableVersion)return;
+    if(hasUnfinishedWork() && !confirm('Há informações ainda não confirmadas. Atualizar agora pode descartar essas alterações. Deseja continuar?'))return;
+    applyAppUpdate(true);
+  };
+  const retrySafeUpdate=()=>{
+    if(!availableVersion)return;
+    setTimeout(()=>applyAppUpdate(),350);
+  };
+  document.addEventListener('focusout',retrySafeUpdate);
+  document.addEventListener('click',retrySafeUpdate);
+  document.addEventListener('submit',retrySafeUpdate);
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    window.addEventListener('load',()=>navigator.serviceWorker
+      .register('./cloud-sw.js',{scope:'./cloud.html',updateViaCache:'none'})
+      .then(reg=>{
+        // Procura uma versão nova do código também quando o app permanece aberto.
+        reg.update().catch(()=>{});
+      })
+      .catch(error=>console.warn('O app continua funcionando online.',error)));
+  }
+  window.addEventListener('load',()=>{
+    setTimeout(()=>checkAppVersion(true),3000);
+    setInterval(()=>{
+      if(!document.hidden){
+        checkAppVersion();
+        if(availableVersion)applyAppUpdate();
+      }
+    },RECHECK_MS);
+  });
   document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden&&api&&household)refreshSoon();
+    if(!document.hidden){
+      if(api&&household)refreshSoon();
+      checkAppVersion();
+      if(availableVersion)applyAppUpdate();
+    }
+  });
+  window.addEventListener('pageshow',()=>{
+    checkAppVersion();
+    if(availableVersion)applyAppUpdate();
   });
   init();
 })();
