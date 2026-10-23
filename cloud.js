@@ -639,6 +639,24 @@
       window.prompt('Copie o convite para enviar à Thaynara:',activeInviteLink);
     }
   };
+  $('switchAccount').onclick=async()=>{
+    const btn=$('switchAccount');
+    btn.disabled=true;
+    try{
+      if(!api)throw new Error('Sem conexão com o banco.');
+      const res=await api.auth.signOut();
+      if(res.error)throw res.error;
+      gatewayUnlocked=true;quickUnlocked=false;pinDismissed=false;
+      user=null;household=null;slot=null;
+      movements=[];goals=[];settings=[];messages=[];
+      if(channel){await api.removeChannel(channel);channel=null;}
+      if(polling){clearInterval(polling);polling=null;}
+      show('login');
+      $('email').value='';$('password').value='';
+      $('loginStatus').textContent='Entre com seu próprio e-mail e senha para entrar no financeiro do casal.';
+    }catch(err){fail(err);}
+    finally{btn.disabled=false;}
+  };
   $('logout').onclick=async()=>{gatewayUnlocked=false;quickUnlocked=false;pinDismissed=true;for(const id of ['entries','recent','messages','goalCards','accounts','stats']){if($(id))$(id).textContent='';}show('gate');$('connection').textContent='● Acesso do casal';};
   $('newMovement').onclick=()=>editMovement();
   $('cancelEntry').onclick=()=>{$('entryFormWrapper').hidden=true;};
