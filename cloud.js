@@ -53,11 +53,13 @@
     document.body.classList.toggle('auth-screen',id!=='workspace');
     for (const key of ['setup','gate','login','signup','forgot','setPassword','quicklock','pinSetup','household','workspace']) $(key).hidden = key !== id;
     if(id==='household'){
+      $('setupAccountEmail').textContent=user?.email||'Conta não identificada';
       const code=availableInvite();
+      $('createFamily').disabled=!!code;
       if(code){
         $('inviteInput').value=code;
-        $('familyError').textContent='♡ Convite recebido! Toque em “Entrar pelo convite” para compartilhar o financeiro.';
-      }
+        $('familyError').textContent='Convite encontrado. Use Entrar pelo convite; não crie outra família.';
+      }else $('familyError').textContent='';
     }
     if(id==='gate' && availableInvite()){
       $('gateStatus').textContent='♡ Você recebeu um convite. Entre para vincular seu celular ao financeiro do casal.';
