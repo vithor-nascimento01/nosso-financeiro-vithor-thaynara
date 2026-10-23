@@ -12,7 +12,7 @@
   let gatewayFailures = 0, gatewayLockedUntil = 0;
   let pinFailures = 0, pinLockedUntil = 0;
   let movements = [], goals = [], settings = [], messages = [], householdMembers = [];
-  let pendingFinance = null;
+  let pendingFinance = null, pendingSourceId = null, installPrompt = null;
   const INVITE_KEY = 'nfvt-pending-invite-v1';
   let activeInviteLink = '';
   function inviteIsValid(code){
@@ -247,9 +247,27 @@
       :'<div class="description">Toque em Novo para registrar uma despesa ou receita.</div>';
     $('goalCards').innerHTML=goals.map(goalCell).join('');
     $('mGoal').innerHTML=goals.map(g=>'<option value="'+esc(g.code)+'">'+esc(g.label)+'</option>').join('');
-    $('messages').innerHTML=messages.map(m=>
-      '<div class="bubble '+(m.sender_id===user.id?'mine':'')+'"><small>'+name(m.sender_slot)+'</small>'+
-      esc(m.body)+'</div>').join('');
+    $('messages').innerHTML=messages.map(m=>{
+      const self=m.sender_id===user.id;
+      const potential=window.NFVTFinance?.parse?.(m.body);
+      let status='';
+      if(potential){
+        const existing=movements.some(row=>
+          row.author_id===m.sender_id && row.kind===potential.kind &&
+          Math.abs(Number(row.amount)-potential.amount)<0.005 &&
+          row.description.trim().toLowerCase()===potential.description.trim().toLowerCase() &&
+          row.occurred_on===potential.occurred_on
+        );
+        status=existing
+          ? '<span class="finance-status">✓ Lançamento correspondente encontrado no Extrato</span>'
+          : self
+            ? '<span class="finance-status">⚠ Só mensagem — ainda não entrou no Extrato</span>'+
+              '<button type="button" class="register-chat" data-finance-message="'+esc(m.id)+'">Revisar e registrar no Extrato</button>'
+            : '<span class="finance-status">⏳ Mensagem financeira ainda não registrada. Aguardando confirmação de '+name(m.sender_slot)+'.</span>';
+      }
+      return '<div class="bubble '+(self?'mine':'')+'"><small>'+name(m.sender_slot)+'</small>'+
+        esc(m.body)+status+'</div>';
+    }).join('');
     $('messages').scrollTop=$('messages').scrollHeight;
   }
   function editMovement(id=null,goal=null) {
@@ -350,14 +368,15 @@
     finally{button.disabled=false;}
   }
   function clearFinanceDraft(){
-    pendingFinance=null;
+    pendingFinance=null;pendingSourceId=null;
     $('financeDraft').hidden=true;
     $('draftError').textContent='';
     $('draftConfirm').disabled=false;
     $('draftConfirm').textContent='✓ Confirmar registro';
   }
-  function presentFinanceDraft(item){
+  function presentFinanceDraft(item, sourceId=null){
     pendingFinance=item;
+    pendingSourceId=sourceId;
     $('draftAmount').textContent=BRL(item.amount);
     $('draftType').textContent=item.kind==='expense'?'Despesa':'Receita';
     $('draftTitle').textContent='♡ Entendi sua mensagem!';
@@ -369,6 +388,7 @@
     $('draftAccount').value=slot;
     $('draftDate').value=item.occurred_on;
     $('draftError').textContent='';
+    $('financeSaved').hidden=true;
     $('financeDraft').hidden=false;
     $('draftConfirm').disabled=false;
     $('draftConfirm').textContent='✓ Confirmar registro';
@@ -406,7 +426,7 @@
       $('draftError').textContent='Sua conta precisa estar conectada para registrar.';return;
     }
     const item=pendingFinance;
-    if($('message').value.trim()!==item.original){
+    if(!pendingSourceId && $('message').value.trim()!==item.original){
       $('draftError').textContent='A mensagem foi alterada. Toque em enviar novamente para revisar os dados.';return;
     }
     const description=$('draftDescription').value.trim().slice(0,150);
@@ -446,6 +466,8 @@
       }
       if($('message').value.trim()===item.original)$('message').value='';
       clearFinanceDraft();
+      $('financeSaved').textContent='✓ Lançamento confirmado no Extrato. Já pode conferir o saldo nos dois celulares.';
+      $('financeSaved').hidden=false;
       await loadData();
     }catch(err){
       $('draftError').textContent=saved
@@ -687,6 +709,19 @@
   $('entryForm').onsubmit=saveMovement;
   $('removeEntry').onclick=removeMovement;
   $('messageForm').onsubmit=sendMessage;
+  $('refreshChat').onclick=async()=>{
+    const btn=$('refreshChat');btn.disabled=true;
+    try{await loadData();}
+    finally{btn.disabled=false;}
+  };
+  $('messages').addEventListener('click',event=>{
+    const button=event.target.closest('[data-finance-message]');
+    if(!button)return;
+    const msg=messages.find(m=>m.id===button.dataset.financeMessage && m.sender_id===user?.id);
+    const parsed=msg && window.NFVTFinance?.parse?.(msg.body);
+    if(!parsed)return;
+    presentFinanceDraft(parsed,msg.id);
+  });
   $('draftConfirm').onclick=confirmFinanceDraft;
   $('draftCancel').onclick=()=>clearFinanceDraft();
   $('draftSendText').onclick=async()=>{
@@ -703,7 +738,7 @@
     finally{button.disabled=false;}
   };
   $('message').addEventListener('input',()=>{
-    if(pendingFinance && $('message').value.trim()!==pendingFinance.original)clearFinanceDraft();
+    if(pendingFinance && !pendingSourceId && $('message').value.trim()!==pendingFinance.original)clearFinanceDraft();
   });
   $('entries').addEventListener('click',e=>{
     const btn=e.target.closest('[data-edit]');
