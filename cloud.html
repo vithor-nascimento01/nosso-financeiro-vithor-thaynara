@@ -87,6 +87,7 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <button class="btnoutline" id="openForgot" type="button">Esqueci a senha</button>
 </div>
 <p id="loginStatus" class="description" role="status" aria-live="polite"></p>
+<p class="description">Se a conta já foi criada pelo administrador no Supabase, <strong>entre diretamente aqui</strong> com o e-mail e a senha dessa conta. Não precisa repetir o cadastro.</p>
 <button type="button" class="btnoutline" id="backToGate">Voltar</button>
 </section>
 <section id="quicklock" hidden class="card">
@@ -130,7 +131,12 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <input type="password" id="signupConfirm" required autocomplete="new-password" minlength="8">
 <button class="btn wide" type="submit">Criar conta segura</button></form>
 <p id="signupStatus" class="description" role="status" aria-live="polite"></p>
-<button class="btnoutline" type="button" data-go-login>Voltar ao login</button>
+<div id="signupHelp" class="alert" hidden>
+<strong>O cadastro foi bloqueado pelo envio de e-mails?</strong>
+<p>Peça ao administrador do Nosso Financeiro para conferir a conta em <b>Supabase → Authentication → Users</b>. Se ainda não existir, ele pode usar <b>Add user → Create new user</b>, definir uma senha forte e marcar a confirmação administrativa do e-mail somente depois de verificar que o endereço pertence à pessoa.</p>
+<p>Com a conta criada e confirmada, volte ao login e entre com o e-mail e a senha dessa conta. Depois aceite o convite do casal. <b>Não é preciso recriar a família.</b></p>
+</div>
+<button class="btnoutline" type="button" data-go-login>Já tenho conta / Voltar ao login</button>
 </section>
 <section id="forgot" hidden class="card">
 <h2>Recuperar senha</h2>
