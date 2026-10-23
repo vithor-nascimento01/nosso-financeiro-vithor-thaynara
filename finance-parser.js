@@ -15,7 +15,7 @@
     ['Pets',/\b(cachorro|cachorrinho|cachorra|gato|racao|pet|veterinario)\b/],
     ['Assinaturas',/\b(netflix|spotify|youtube|chatgpt|google one|assinatura|prime video)\b/],
     ['Lazer',/\b(cinema|shopping|jogo|jiu jitsu|barbeiro|festa|show|passeio|lazer)\b/],
-    ['Compras',/\b(roupa|tenis|sapato|celular|geladeira|perfume|presente|eletronico)\b/]
+    ['Compras',/\b(compras?|loj(as?)?|roupa|tenis|sapato|celular|geladeira|perfume|presente|eletronico)\b/]
   ];
   const amountValue = raw => {
     const decimalOnly=/^\d+\.\d{1,2}$/.test(raw);
