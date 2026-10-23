@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="90" fill="#191511"/><rect x="18" y="18" width="476" height="476" rx="75" fill="none" stroke="#caa06b" stroke-width="12"/><text x="256" y="294" font-family="Georgia,serif" font-size="152" text-anchor="middle" fill="#e8c68c">V+T</text><text x="256" y="386" font-family="Georgia,serif" font-size="62" text-anchor="middle" fill="#dbb47b">♥</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<title>Nosso Financeiro V coração T</title>
+<rect width="512" height="512" rx="94" fill="#191511"/>
+<rect x="24" y="24" width="464" height="464" rx="71" fill="none" stroke="#caa06b" stroke-width="10"/>
+<g fill="none" stroke="#edc98f" stroke-linecap="round" stroke-linejoin="round">
+<path d="M92 179 L148 317 L204 179" stroke-width="22"/>
+<path d="M323 188 L432 188 M377.5 190 L377.5 318" stroke-width="22"/>
+<path d="M257 310 C241 292 213 268 214 244 C215 216 242 210 257 231 C272 210 299 216 300 244 C301 268 273 292 257 310 Z" stroke-width="10"/>
+</g></svg>
