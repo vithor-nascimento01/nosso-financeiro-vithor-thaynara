@@ -186,6 +186,7 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <section class="tab" id="dreams"><h3>Nossos sonhos</h3><p class="description">As metas e os aportes são compartilhados entre as duas contas.</p><div id="goalCards" class="grid" style="margin-bottom:15px"></div><div class="card"><h3>Convite para o parceiro</h3><p class="description">Convite válido por 48 horas e utilizável somente uma vez.</p><button class="btnoutline" id="makeInvite">Gerar link de convite</button><div class="row" style="flex-wrap:wrap;margin-top:12px"><a class="btn" id="inviteWhatsapp" href="#" target="_blank" rel="noopener noreferrer" hidden>Enviar pelo WhatsApp</a><button type="button" class="btnoutline" id="inviteCopy" hidden>Copiar link</button></div><p id="inviteResult" class="description" role="status" aria-live="polite"></p></div></section>
 <section class="tab" id="conversation"><div class="chat"><div class="chathead"><b>♡ Grupo Nosso Financeiro</b><small>Escreva “Gastei 35 no mercado”. Para entrar no Extrato, confirme o lançamento.</small><button type="button" id="refreshChat" class="refresh-chat">↻ Atualizar</button></div>
 <div class="chatmessages" id="messages"></div>
+<p id="chatActionStatus" class="alert" hidden role="status" style="margin:0 8px 6px"></p>
 <div id="financeDraft" class="finance-draft" hidden>
 <strong id="draftTitle">Confirmar lançamento</strong>
 <div class="finance-draft-top"><span id="draftAmount">R$ 0,00</span><span id="draftType">Despesa</span></div>
@@ -197,7 +198,7 @@ code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
 <label>Data<input type="date" id="draftDate" required></label>
 </div>
 <p id="draftError" class="error" role="alert"></p>
-<div class="finance-draft-actions"><button type="button" id="draftConfirm" class="btn">✓ Confirmar registro</button><button type="button" id="draftCancel" class="btnoutline">Cancelar</button><button type="button" id="draftSendText" class="btnoutline">Só enviar mensagem</button></div>
+<div class="finance-draft-actions"><button type="button" id="draftConfirm" class="btn">✓ Confirmar registro</button><button type="button" id="draftCancel" class="btnoutline">Cancelar</button><button type="button" id="draftSendText" class="btnoutline" title="Não gera lançamento no Extrato">Somente conversar (não registrar)</button></div>
 </div>
 <form class="composer" id="messageForm"><input id="message" maxlength="2000" autocomplete="off" aria-label="Mensagem" placeholder="Ex.: Gastei 35 no mercado" required><button type="submit" aria-label="Enviar mensagem">➤</button></form>
 </div></section>
