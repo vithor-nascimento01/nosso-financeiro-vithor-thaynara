@@ -1,0 +1,37 @@
+{
+  "name": "Nosso Financeiro — Vithor e Thaynara",
+  "short_name": "Nosso Financeiro",
+  "description": "Controle financeiro compartilhado V♡T",
+  "start_url": "/cloud.html",
+  "id": "/cloud.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#1d1916",
+  "theme_color": "#1d1916",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/vt-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/vt-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
