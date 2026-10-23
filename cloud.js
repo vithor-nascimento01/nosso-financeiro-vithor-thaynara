@@ -510,7 +510,8 @@
     $('gateStatus').textContent='';
     await loadSession();
   });
-  const redirectTo = () => location.origin + '/cloud.html';
+  // Sempre use o alias estável, inclusive se o cadastro começou em um preview temporário.
+  const redirectTo = () => inviteBaseURL();
   const feedback = (id, message) => { $(id).textContent=message; };
   const authError = err => {
     if (!err) return '';
@@ -545,6 +546,7 @@
   });
   $('openSignup').onclick=()=>{
     $('signupEmail').value=$('email').value;
+    $('signupHelp').hidden=true;
     feedback('signupStatus','');
     show('signup');
   };
@@ -572,9 +574,13 @@
       $('signupPassword').value='';$('signupConfirm').value='';
       feedback('signupStatus',res.data?.session ?
         'Cadastro criado. Abrindo sua conta...' :
-        'Verifique sua caixa de entrada e confirme seu e-mail pelo link recebido. Depois volte e faça o login com sua senha.');
+        'Cadastro solicitado. Se não chegar o e-mail de confirmação, veja as instruções abaixo. Não repita o cadastro.');
+      $('signupHelp').hidden=!!res.data?.session;
       if(res.data?.session)await loadSession();
-    }catch(err){feedback('signupStatus',authError(err));}
+    }catch(err){
+      feedback('signupStatus',authError(err));
+      $('signupHelp').hidden=false;
+    }
     finally{submitBusy(form,false);}
   });
   $('forgotForm').addEventListener('submit',async e=>{
