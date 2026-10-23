@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b1917"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nosso Financeiro V♡T"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="application-name" content="Nosso Financeiro V♡T">
+<title>Nosso Financeiro • Sincronizado</title>
+<style>
+:root{--bg:#1d1916;--ink:#302a25;--gold:#d7ae7a;--paper:#fbf7f0;--green:#1e7958;--red:#ad5555}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(155deg,#49372a,#181612 420px);font:14px -apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;color:var(--ink);min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.app{max-width:930px;margin:0 auto}
+.hero{color:#fff;padding:26px 19px 24px}.top{display:flex;align-items:center;gap:10px}
+.mark{height:52px;width:52px;background:linear-gradient(125deg,#f8e4c0,#c39b62);color:#251a12;display:grid;place-items:center;border-radius:17px;font:800 20px Georgia,serif}
+.brand{flex:1}.brand h1{font:normal 23px Georgia,serif;margin:0}.brand small{color:#e8d7bc;font-size:11px;letter-spacing:1.5px}
+.hero h2{font:normal 30px/1.15 Georgia,serif;margin:25px 0 7px}.hero p{font-size:13px;color:#e0cbb3;margin:0}
+.site{background:var(--paper);border-radius:24px 24px 0 0;min-height:65vh;padding:19px 15px 110px}
+.card{background:#fff;border:1px solid #e9dece;border-radius:17px;padding:17px;margin-bottom:12px;box-shadow:0 2px 9px #36200709}
+h2,h3{margin:0 0 15px;font-size:18px}.description{color:#8b7d70;font-size:12px;line-height:1.6}
+input,select{background:white;color:#221d19;width:100%;border:1px solid #dacbb8;border-radius:11px;padding:13px;margin:5px 0 13px}
+label{font-size:12px;font-weight:700;color:#6f5b48}
+.btn{border:0;background:linear-gradient(115deg,#f2d9b4,#ce9f68);border-radius:12px;padding:13px 15px;color:#24190f;font-weight:800}
+.btnoutline{border:1px solid #decbb1;background:white;color:#58442f;border-radius:11px;padding:12px 13px;font-weight:700}
+.wide{width:100%}.row{display:flex;gap:10px;align-items:center}.row>*{min-width:0}.space{justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.muted{color:#817567}.green{color:var(--green)}.red{color:var(--red)}.big{font-size:23px;font-weight:800;white-space:nowrap}
+.balance{background:linear-gradient(120deg,#382a22,#694c31);border-radius:18px;color:#fff;padding:20px;margin-bottom:13px}
+.balance p{color:#deceb9;font-size:11px;margin:0}.balance strong{font-size:clamp(28px,7vw,44px);display:block;margin:6px 0}
+.tab{display:none}.tab.active{display:block}.nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#211a16ec;backdrop-filter:blur(15px);display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #b58d60;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+.nav button{border:0;background:transparent;color:#c7b5a1;padding:8px 0;font-size:11px}.nav button b{font-size:22px;display:block;margin-bottom:5px}.nav button.active{color:#ffe0b4}
+.item{border-top:1px solid #f0e5d8;padding:12px 0}.item:first-child{border:0}.item b{font-size:13px}.item small{display:block;margin-top:4px;font-size:11px;color:#8a7c6d}
+.goal{padding:14px;border-radius:13px;border:1px solid #e8dbca;background:#fff;text-align:left;width:100%}.goal b{display:block;margin:8px 0}.track{background:#eee1d3;height:7px;border-radius:10px;overflow:hidden;margin:9px 0}.track i{display:block;height:100%;background:#c6a071}
+.chat{height:60dvh;min-height:320px;background:#e6dccf;display:flex;flex-direction:column;border-radius:14px;overflow:hidden}
+.chathead{padding:12px;background:#13614a;color:#fff}.chatmessages{padding:14px;flex:1;overflow:auto;background-image:radial-gradient(#d3c2b0 .7px,transparent .7px);background-size:21px 21px}
+.bubble{background:#fff;border-radius:11px;padding:10px;margin-bottom:11px;max-width:87%;font-size:13px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
+.bubble.mine{margin-left:auto;background:#d4f3d8}.bubble small{display:block;font-weight:700;margin-bottom:4px;color:#236c51}.composer{display:flex;gap:8px;background:#fff;padding:8px}.composer input{flex:1;margin:0;border-radius:22px}.composer button{border:0;background:#17704f;color:#fff;border-radius:50%;width:43px;height:43px}
+.error{color:#b74b4b;font-size:12px}.alert{background:#fcead1;border:1px solid #ebc89a;border-radius:12px;padding:12px;font-size:12px;line-height:1.5;color:#69491f}
+code{font-family:ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
+@media(min-width:750px){.hero{padding:35px}.site{padding:28px 35px;border-radius:24px;margin-bottom:25px}.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.nav{left:50%;transform:translateX(-50%);max-width:550px;border-radius:18px 18px 0 0}}
+.finance-draft{background:#fffaf3;border-top:2px solid #d3a76c;padding:13px 14px;max-height:54dvh;overflow-y:auto;box-shadow:0 -4px 20px #6246282a;flex-shrink:0}
+.finance-draft strong{display:block;font:normal 18px Georgia,serif;color:#594027}
+.finance-draft-top{display:flex;align-items:baseline;gap:13px;margin-top:6px}
+.finance-draft-top span:first-child{font-size:26px;color:#255f49;font-weight:850}
+.finance-draft-top span:last-child{color:#72543c;font-weight:700}
+.finance-draft .description{margin:5px 0 8px}
+.finance-draft-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.finance-draft-grid label{display:block}
+.finance-draft-grid input,.finance-draft-grid select{margin:4px 0 9px;padding:9px 11px}
+.finance-draft-actions{display:flex;gap:7px;flex-wrap:wrap}
+.finance-draft-actions button{flex:1 1 auto;padding:10px;font-size:12px}
+@media(max-width:400px){.finance-draft-grid{grid-template-columns:1fr 1fr}.finance-draft-actions button{flex-basis:100%}}
+
+.chathead{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:13px 15px 12px;padding-right:90px;line-height:1.5}
+.chathead b{font-size:14px}
+.chathead small{font-size:11px;line-height:1.4;opacity:.92;display:block}
+.refresh-chat{position:absolute;right:9px;top:12px;border:1px solid #ffffff8c;color:white;border-radius:9px;background:transparent;font-size:11px;padding:7px 8px}
+.bubble .finance-status{display:block;margin-top:9px;padding-top:8px;border-top:1px solid #eee3d6;color:#715035;font-size:11px}
+.bubble.mine .finance-status{border-color:#9dccaa}
+.bubble .register-chat{display:block;margin-top:7px;border:1px solid #b88c4e;background:#fbe9d0;color:#352316;border-radius:10px;padding:8px 10px;font-weight:700}
+.bubble.mine .register-chat{background:#fff5dd}
+@media(max-width:650px){.account-header{display:block!important}.account-header>.row{justify-content:flex-start!important;margin-top:13px}.account-header button{font-size:12px;padding:10px}}
+
+/* Atualizações automáticas: somente mostra aviso quando há edição em andamento. */
+.update-notice{margin:0 15px 8px;padding:13px 14px;background:#ffeed2;border:1px solid #d8ac75;border-radius:14px;color:#50341d;box-shadow:0 5px 17px #1d140a24;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.update-notice .btnoutline{padding:8px 12px;font-size:12px;white-space:nowrap}
+.update-notice b{font-size:13px}
+.update-notice small{font-size:11px;display:block;line-height:1.4}
+[hidden]{display:none!important}
+</style>
+<link rel="stylesheet" href="./login-theme.css">
+<link rel="manifest" href="./cloud.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="./vt-icon-180.png">
+</head>
+<body class="auth-screen">
+<div class="app">
+<header class="hero"><div class="top"><div class="mark">V♡T</div><div class="brand"><h1>Nosso Financeiro</h1><small>VITHOR + THAYNARA</small></div><span id="connection" style="font-size:12px">● Conectando</span></div>
+<h2>Nosso dinheiro,<br>nosso futuro.</h2><p>Um registro, os dois celulares. ♡</p></header>
+<div id="updateNotice" class="update-notice" hidden role="status" aria-live="polite">
+<div><b>Nova versão disponível ♡</b><small>Finalize o que estiver preenchendo antes de atualizar.</small></div>
+<button type="button" class="btnoutline" id="updateNow">Atualizar agora</button>
+</div>
+<main class="site">
+<section id="setup" class="card"><h2>Preparando conexão</h2><p id="setupText" class="description">Validando o acesso ao banco privado.</p></section>
+<section id="gate" hidden class="card">
+<h2>Nosso Financeiro ♡</h2>
+<p class="description">Nosso dinheiro, nosso futuro.</p>
+<form id="gateForm">
+<label for="gateUser">Login</label>
+<input type="text" id="gateUser" name="username" required autocomplete="username" autocapitalize="characters" spellcheck="false" value="VTS2">
+<label for="gatePass">Senha</label>
+<input type="password" id="gatePass" name="password" required inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" placeholder="••••">
+<button type="submit" class="btn wide">Entrar no nosso financeiro →</button>
+</form>
+<p id="gateStatus" role="status" aria-live="polite" class="description"></p>
+<p class="description" style="font-size:11px;margin-top:18px">Acesso do casal. O banco compartilhado usa autenticação separada do Supabase.</p>
+</section>
+<section id="login" hidden class="card">
+<h2>Vincular acesso à nuvem ♡</h2>
+<p class="description">Somente na primeira configuração de cada aparelho: conecte sua conta segura para sincronizar os dados entre os celulares. Depois, use o acesso VTS2 na entrada.</p>
+<form id="loginForm">
+<label for="email">E-mail da conta online</label>
+<input type="email" id="email" required autocomplete="username" placeholder="seu@email.com">
+<label for="password">Senha</label>
+<input type="password" id="password" required autocomplete="current-password" placeholder="Sua senha" minlength="8">
+<button class="btn wide" type="submit">Conectar este aparelho</button></form>
+<div class="row space" style="margin-top:15px;flex-wrap:wrap">
+<button class="btnoutline" id="openSignup" type="button">Primeiro acesso? Criar conta</button>
+<button class="btnoutline" id="openForgot" type="button">Esqueci a senha</button>
+</div>
+<p id="loginStatus" class="description" role="status" aria-live="polite"></p>
+<p class="description">Se a conta já foi criada pelo administrador no Supabase, <strong>entre diretamente aqui</strong> com o e-mail e a senha dessa conta. Não precisa repetir o cadastro.</p>
+<button type="button" class="btnoutline" id="backToGate">Voltar</button>
+</section>
+<section id="quicklock" hidden class="card">
+<h2>Bem-vindos de volta ♡</h2>
+<p class="description">Desbloqueio rápido neste aparelho. A conta segura já foi vinculada anteriormente.</p>
+<form id="quickForm">
+<label for="quickUser">Login</label>
+<input id="quickUser" type="text" required autocomplete="username" autocapitalize="characters" value="VTS2">
+<label for="quickPin">Senha de acesso rápido</label>
+<input id="quickPin" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" placeholder="••••">
+<button class="btn wide" type="submit">Entrar no Nosso Financeiro</button>
+</form>
+<p id="quickStatus" class="description" role="status" aria-live="polite"></p>
+<button type="button" class="btnoutline" id="useSecureAccount">Entrar por outra conta</button>
+<p class="description">Este PIN desbloqueia o aplicativo somente depois do primeiro login seguro neste aparelho.</p>
+</section>
+<section id="pinSetup" hidden class="card">
+<h2>Ativar acesso rápido ♡</h2>
+<p class="description">Sua conta está conectada. Para as próximas aberturas neste aparelho, configure o login <b>VTS2</b> com um PIN de quatro dígitos. O PIN não substitui a proteção da conta online.</p>
+<form id="pinSetupForm">
+<label for="setupLogin">Login rápido</label>
+<input id="setupLogin" type="text" value="VTS2" disabled>
+<label for="setupPin">PIN de 4 dígitos</label>
+<input id="setupPin" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" placeholder="••••">
+<label for="setupPinConfirm">Confirme o PIN</label>
+<input id="setupPinConfirm" type="password" required inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" autocomplete="off" placeholder="••••">
+<button class="btn wide" type="submit">Ativar acesso rápido</button>
+</form>
+<p id="pinSetupStatus" class="description" role="status" aria-live="polite"></p>
+<button class="btnoutline" type="button" id="skipPin">Continuar sem PIN</button>
+</section>
+<section id="signup" hidden class="card">
+<h2>Criar meu login</h2>
+<p class="description">Cada pessoa precisa ter seu próprio e-mail e uma senha forte. O convite do casal será feito após o acesso.</p>
+<form id="signupForm">
+<label for="signupEmail">Seu e-mail</label>
+<input type="email" id="signupEmail" required autocomplete="email" placeholder="seu@email.com">
+<label for="signupPassword">Criar senha (mínimo de 8 caracteres)</label>
+<input type="password" id="signupPassword" required autocomplete="new-password" minlength="8">
+<label for="signupConfirm">Confirmar senha</label>
+<input type="password" id="signupConfirm" required autocomplete="new-password" minlength="8">
+<button class="btn wide" type="submit">Criar conta segura</button></form>
+<p id="signupStatus" class="description" role="status" aria-live="polite"></p>
+<div id="signupHelp" class="alert" hidden>
+<strong>O cadastro foi bloqueado pelo envio de e-mails?</strong>
+<p>Peça ao administrador do Nosso Financeiro para conferir a conta em <b>Supabase → Authentication → Users</b>. Se ainda não existir, ele pode usar <b>Add user → Create new user</b>, definir uma senha forte e marcar a confirmação administrativa do e-mail somente depois de verificar que o endereço pertence à pessoa.</p>
+<p>Com a conta criada e confirmada, volte ao login e entre com o e-mail e a senha dessa conta. Depois aceite o convite do casal. <b>Não é preciso recriar a família.</b></p>
+</div>
+<button class="btnoutline" type="button" data-go-login>Já tenho conta / Voltar ao login</button>
+</section>
+<section id="forgot" hidden class="card">
+<h2>Recuperar senha</h2>
+<p class="description">Você receberá um e-mail seguro para cadastrar uma nova senha.</p>
+<form id="forgotForm"><label for="forgotEmail">Seu e-mail</label>
+<input type="email" id="forgotEmail" required autocomplete="email" placeholder="seu@email.com">
+<button class="btn wide" type="submit">Enviar recuperação</button></form>
+<p id="forgotStatus" class="description" role="status" aria-live="polite"></p>
+<button class="btnoutline" type="button" data-go-login>Voltar ao login</button>
+</section>
+<section id="setPassword" hidden class="card">
+<h2>Definir nova senha</h2><p class="description">Crie uma senha forte para sua conta.</p>
+<form id="resetPasswordForm">
+<label for="resetPassword">Nova senha (mínimo de 8 caracteres)</label><input id="resetPassword" type="password" required autocomplete="new-password" minlength="8">
+<label for="resetConfirm">Confirmar nova senha</label><input id="resetConfirm" type="password" required autocomplete="new-password" minlength="8">
+<button type="submit" class="btn wide">Salvar nova senha</button></form>
+<p id="resetStatus" class="description" role="status" aria-live="polite"></p>
+</section>
+<section id="household" hidden class="card"><h2>Unir os dois celulares</h2><p class="description">Conta online conectada: <strong id="setupAccountEmail"></strong></p><p class="description">O primeiro usuário cria a família. Se você é a Thaynara, entre com sua própria conta online e use o código enviado pelo Vithor. <strong>Não crie uma família separada.</strong></p>
+<div class="grid"><div class="card"><button class="btn wide" id="createFamily">Criar nossa família</button></div><div class="card"><label>Código recebido</label><input id="inviteInput" placeholder="Cole o código de convite"><button class="btnoutline wide" id="joinFamily">Entrar pelo convite</button></div></div>
+<p class="error" id="familyError"></p></section>
+<section id="workspace" hidden>
+<div id="appInstallGuide" class="alert" hidden role="status" style="margin-bottom:12px"></div>
+<div class="row space account-header" style="margin-bottom:15px"><div><b id="memberName"></b><p class="description" style="margin:3px 0">Conta: <strong id="accountEmail"></strong></p><p class="description" style="margin:3px 0">Grupo financeiro: <strong id="familyIdentifier"></strong> · Perfil: <strong id="memberRole"></strong></p></div><div class="row" style="flex-wrap:wrap;justify-content:flex-end"><button class="btnoutline" type="button" id="installGuide">Instalar no celular</button><button class="btnoutline" id="switchAccount" type="button">Trocar conta</button><button class="btnoutline" id="logout">Bloquear</button></div></div>
+<section class="tab active" id="dashboard"><div id="membershipAlert" class="alert" hidden></div><div class="balance"><p>Patrimônio informado</p><strong id="totalBalance">R$ 0,00</strong><p>Carteiras + reservas, sem dupla contagem</p></div><div class="grid" id="stats"></div><h3 style="margin-top:20px">Carteiras</h3><div class="grid" id="accounts"></div><h3 style="margin-top:20px">Últimos registros</h3><div id="recent" class="card"></div></section>
+<section class="tab" id="ledger"><div class="row space" style="flex-wrap:wrap"><h3>Lançamentos</h3><div class="row"><button type="button" class="btnoutline" id="refreshLedger">↻ Atualizar</button><button class="btn" id="newMovement">+ Novo</button></div></div><div id="entries" class="card"></div><section class="card" id="entryFormWrapper" hidden><h3 id="entryTitle">Novo lançamento</h3><form id="entryForm"><label>Tipo</label><select id="mKind"><option value="expense">Despesa</option><option value="income">Receita</option><option value="transfer">Transferência</option><option value="goal">Aporte em meta</option><option value="withdraw">Resgate da meta</option></select>
+<div class="grid"><div><label>Valor (R$)</label><input id="mAmount" inputmode="decimal" required placeholder="0,00"></div><div><label>Data</label><input type="date" id="mDate" required></div></div>
+<label>Descrição</label><input id="mDescription" maxlength="300" placeholder="Ex.: Mercado">
+<label>Conta de origem</label><select id="mFrom"><option value="v">Vithor</option><option value="t">Thaynara</option><option value="shared">Conjunta</option></select>
+<label>Conta de destino</label><select id="mTo"><option value="v">Vithor</option><option value="t">Thaynara</option><option value="shared">Conjunta</option></select>
+<label>Meta</label><select id="mGoal"></select>
+<label>Categoria</label><select id="mCategory"><option>Alimentação</option><option>Moradia</option><option>Transporte</option><option>Saúde</option><option>Educação</option><option>Lazer</option><option>Outros</option><option>Renda</option><option>Pets</option><option>Assinaturas</option><option>Compras</option></select>
+<div class="row"><button class="btn">Salvar</button><button type="button" class="btnoutline" id="cancelEntry">Cancelar</button><button type="button" class="btnoutline red" id="removeEntry" hidden>Excluir</button></div><p id="entryError" class="error"></p></form></section></section>
+<section class="tab" id="dreams"><h3>Nossos sonhos</h3><p class="description">As metas e os aportes são compartilhados entre as duas contas.</p><div id="goalCards" class="grid" style="margin-bottom:15px"></div><div class="card"><h3>Convite para o parceiro</h3><p class="description">Convite válido por 48 horas e utilizável somente uma vez.</p><button class="btnoutline" id="makeInvite">Gerar link de convite</button><div class="row" style="flex-wrap:wrap;margin-top:12px"><a class="btn" id="inviteWhatsapp" href="#" target="_blank" rel="noopener noreferrer" hidden>Enviar pelo WhatsApp</a><button type="button" class="btnoutline" id="inviteCopy" hidden>Copiar link</button></div><p id="inviteResult" class="description" role="status" aria-live="polite"></p></div></section>
+<section class="tab" id="conversation"><div class="chat"><div class="chathead"><b>♡ Grupo Nosso Financeiro</b><small>Escreva “Gastei 35 no mercado”. Para entrar no Extrato, confirme o lançamento.</small><button type="button" id="refreshChat" class="refresh-chat">↻ Atualizar</button></div>
+<div class="chatmessages" id="messages"></div>
+<p id="chatActionStatus" class="alert" hidden role="status" style="margin:0 8px 6px"></p>
+<div id="financeDraft" class="finance-draft" hidden>
+<strong id="draftTitle">Confirmar lançamento</strong>
+<div class="finance-draft-top"><span id="draftAmount">R$ 0,00</span><span id="draftType">Despesa</span></div>
+<p id="draftWarning" class="description">Confira os dados antes de salvar no Extrato.</p><p id="financeSaved" class="alert" hidden role="status"></p>
+<div class="finance-draft-grid">
+<label>Descrição<input id="draftDescription" maxlength="150" placeholder="Descrição" required></label>
+<label>Categoria<select id="draftCategory"><option>Alimentação</option><option>Moradia</option><option>Transporte</option><option>Saúde</option><option>Educação</option><option>Lazer</option><option>Pets</option><option>Assinaturas</option><option>Compras</option><option>Renda</option><option>Outros</option></select></label>
+<label>Carteira<select id="draftAccount"><option value="v">Vithor</option><option value="t">Thaynara</option><option value="shared">Conjunta</option></select></label>
+<label>Data<input type="date" id="draftDate" required></label>
+</div>
+<p id="draftError" class="error" role="alert"></p>
+<div class="finance-draft-actions"><button type="button" id="draftConfirm" class="btn">✓ Confirmar registro</button><button type="button" id="draftCancel" class="btnoutline">Cancelar</button><button type="button" id="draftSendText" class="btnoutline" title="Não gera lançamento no Extrato">Somente conversar (não registrar)</button></div>
+</div>
+<form class="composer" id="messageForm"><input id="message" maxlength="2000" autocomplete="off" aria-label="Mensagem" placeholder="Ex.: Gastei 35 no mercado" required><button type="submit" aria-label="Enviar mensagem">➤</button></form>
+</div></section>
+<nav class="nav"><button class="active" data-tab="dashboard"><b>⌂</b>Início</button><button data-tab="ledger"><b>☷</b>Extrato</button><button data-tab="dreams"><b>♡</b>Metas</button><button data-tab="conversation"><b>◉</b>Chat</button></nav>
+</section>
+</main>
+</div>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script defer src="./finance-parser.js"></script>
+<script defer src="./cloud.js?v=20261023-2"></script>
+</body></html>
