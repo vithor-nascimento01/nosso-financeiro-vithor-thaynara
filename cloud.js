@@ -375,6 +375,7 @@
     $('draftConfirm').textContent='✓ Confirmar registro';
   }
   function presentFinanceDraft(item, sourceId=null){
+    $('chatActionStatus').hidden=true;
     pendingFinance=item;
     pendingSourceId=sourceId;
     $('draftAmount').textContent=BRL(item.amount);
@@ -466,8 +467,8 @@
       }
       if($('message').value.trim()===item.original)$('message').value='';
       clearFinanceDraft();
-      $('financeSaved').textContent='✓ Lançamento confirmado no Extrato. Já pode conferir o saldo nos dois celulares.';
-      $('financeSaved').hidden=false;
+      $('chatActionStatus').textContent='✓ Registro salvo com sucesso no Extrato compartilhado! Saldos e totais atualizados para Vithor e Thaynara.';
+      $('chatActionStatus').hidden=false;
       await loadData();
     }catch(err){
       $('draftError').textContent=saved
@@ -711,8 +712,14 @@
   $('messageForm').onsubmit=sendMessage;
   $('refreshChat').onclick=async()=>{
     const btn=$('refreshChat');btn.disabled=true;
-    try{await loadData();}
-    finally{btn.disabled=false;}
+    try{
+      await loadData();
+      $('chatActionStatus').textContent='↻ Conversa, Extrato e saldos atualizados.';
+      $('chatActionStatus').hidden=false;
+    }catch(err){
+      $('chatActionStatus').textContent='Não foi possível atualizar. Confira a conexão.';
+      $('chatActionStatus').hidden=false;
+    }finally{btn.disabled=false;}
   };
   $('messages').addEventListener('click',event=>{
     const button=event.target.closest('[data-finance-message]');
@@ -733,6 +740,8 @@
       await postChatText(text);
       if($('message').value.trim()===text)$('message').value='';
       clearFinanceDraft();
+      $('chatActionStatus').textContent='Mensagem enviada como conversa. Nenhum gasto foi registrado no Extrato.';
+      $('chatActionStatus').hidden=false;
       await loadData();
     }catch(err){$('draftError').textContent='Não foi possível enviar: '+(err?.message||'erro de conexão.');}
     finally{button.disabled=false;}
